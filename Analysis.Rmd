@@ -1,0 +1,154 @@
+---
+title: "Analysis"
+output: html_document
+---
+
+```{r setup, message=F}
+library(tidyverse)   # Easier data manipulation
+library(readxl)      # Import Excel files directly
+library(khroma)      # Colors for heatmap
+library(patchwork)   # Arrange ggplots in grids
+library(gt)          # GTables
+library(glmmTMB)     # GLMMs
+library(performance) # check_overdispersion
+library(emmeans)     # Pairwise tests
+library(indicspecies)# Indicator Species Analysis 
+library(vegan)       # For ordinations
+# devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis) # Pairwise PERMANOVA
+
+source("functions/std_error.R") # Standard error calc
+```
+
+## 2. Methods
+
+### Importing and cleaning data
+
+First, we import some basic metadata on the honey samples, pesticides, USDA organic tolerances, and experimental colonies.
+
+```{r importMetaData, message=FALSE}
+# Import metadata
+meta.Honey <- read_csv("data/metadata/honey-meta.csv", na="na",
+                       col_types = "fffff", col_select = -Store)
+meta.Cmpds <- read_csv("data/metadata/pesticide-info-OREI.csv",   
+                       col_types = "fffcc")
+meta.Tols  <- read_csv("data/metadata/pesticide-tolerances.csv",
+                       col_types = "fdf")
+meta.Cols  <- read_csv("data/metadata/colonies-OREI.csv",
+                       col_types = "fffff", col_select = c(-Position, -Pi))
+```
+
+Next, I need to import the Excel files from the Cornell Chemical Ecology Core Facility and convert them to a rectangular format for analysis in R. I created a function, `read_pesticides()`, that does this. The function pivots the pesticide data and tacks on the columns containing the limits of quantification and detection. Some important steps include:
+
+1.  Read data from the spreadsheet.
+2.  Import limits of detections (reported in ng of analyte).
+3.  If data reads as `n.d.` or `N/F`, replace that observation with `0` ppb. If data reads as `<LOQ`, replace it with the sample-specific LOQ value for that compound, converted to ppb. (We divide the LOQ in ng by the sample weight). Likewise, `<ULOQ` values are converted to the ULOQ value.
+
+I also follow guidelines in [USDA Publication 2613: Responding to Results from Pesticide Residue Testing](https://www.ams.usda.gov/sites/default/files/media/2613.pdf) to determine whether residue levels in each sample exceed organic tolerances. Basically, there are established limits for Amitraz and Coumaphos in honey and wax. Residue limits for every other compound are set at 10 ppb.
+
+```{r importExcel, message=F}
+source("functions/read_pesticides.R")
+
+data.H1.raw <- read_pesticides(
+  frp_ss       = "data/pesticides/2025-04-09_BDM_Results_Project79.xlsx",
+  frp_tab      = "Honey",
+  frp_data     = "B4:CW77", 
+  frp_lims     = "E78:CW80",
+  frp_pestName = "E4:CW4",
+  frp_limUnits = "ng")
+
+data.H2.raw <- read_pesticides(
+  frp_ss       = "data/pesticides/2025-04-09_BDM_Results_Project79.xlsx",
+  frp_tab      = "Honey",
+  frp_data     = "B83:CW156", 
+  frp_lims     = "E157:CW159",
+  frp_pestName = "E83:CW83",
+  frp_limUnits = "ng")
+
+# Store both honey dataframes in a list
+list.H <- list(
+  H1 = data.H1.raw,
+  H2 = data.H2.raw)
+rm(data.H1.raw, data.H2.raw)
+
+# I create a function that cleans up the pesticide data.
+# It is a function so I can use the function on both batches of honey data at once
+clean_pesticide_data <- function(x) {
+  
+  if(!any(grepl("ULOQ", names(x)))) {
+    # If dataset reports ULOL vs ULOQ.
+    # Mutate() functions below won't work unless we have an ULOQ value.
+    # So I set this to NA just in case it's different from ULOQ
+    ULOQ.col <- "ULOQ.ppb"
+    x[[ULOQ.col]] <- NA
+  }
+
+  # <LOQs or >ULOQs get replaced with LOQ or ULOQ value, respectively
+  x <- x %>% mutate(
+    ppb  = case_match(ppb, "<LOQ"   ~ as.character(LOD.ppb),
+                           ">ULOQ"  ~ as.character(ULOQ.ppb),
+                           .default = as.character(ppb)),
+    ppb  = as.numeric(ppb),
+    Cmpd = as.factor(Cmpd))
+  
+  # Now we can drop the placeholder ULOQ column
+  if(exists("ULOQ.col")) x <- x %>% select(-starts_with("ULOQ"))
+  return(x)
+}
+
+# Clean up both batches of the honey dataset at once
+list.H.clean <- map(list.H, ~clean_pesticide_data(.x))
+
+# Combine both files
+data.H.Long <- bind_rows(list.H.clean[["H1"]], list.H.clean[["H2"]]) %>% 
+  separate_wider_delim(Sample.ID, delim=" ", names=c("Sample.Type","Sample.ID")) %>%
+  mutate(
+    Sample.ID = as.factor(as.integer(Sample.ID)),
+    Cmpd      = as.factor(Cmpd),
+    ppb       = as.numeric(ppb)) %>% 
+  left_join(meta.Cmpds %>% select(Cmpd, Class.Pest), by = join_by(Cmpd)) %>% 
+  left_join(meta.Honey, by = join_by(Sample.ID)) %>% 
+  left_join(meta.Cols,  by = join_by(Colony.ID)) %>%
+  
+  select(Sample.ID, Colony.ID, Group, Brand, Apiary, Trt, Cmpd, Class.Pest, ppb, 
+         ends_with(".ppb"))
+
+data.H.Wide <- data.H.Long %>% 
+  select(-Class.Pest, -ends_with(".ppb")) %>% 
+  pivot_wider(names_from = Cmpd, values_from = ppb)
+
+# Clean up unused vars
+rm(list.H, list.H.clean)
+```
+
+### 2.1. Experimental apiary management
+
+#### Figure 1. Map of the Eastern United States indicating the locations of organic apiaries in the states of New York and Pennsylvania
+
+#### Differences in limits between both UHPLC-MS/MS batches
+
+#### Table S2. List of 96 pesticides screened in honey samples
+
+## 3. Results
+
+### 3.0. Contamination summary
+
+#### Figure 2. Heatmap showing overall pesticide residue content of the sampled honeys
+
+### 3.1. How did pesticide contamination compare between sampled honeys?
+
+#### Figure 3. Comparison of the number of pesticide residues in sampled honey and the summed amount of residues per sample
+
+#### Table S3. Positive compound detections within each group of sampled honey
+
+#### Figure 4.
+
+#### Table S4.
+
+#### Table S5.
+
+### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
+
+#### Figure 5.
+
+#### Table S6.

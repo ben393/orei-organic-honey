@@ -1,0 +1,99 @@
+Cmpd,Class.Pest,Class.Chem,Mode,CAS
+"2,4-DME",Miticide,Arylamine,Breakdown product of Amitraz (IRAC 19),000095-68-1
+4-Hydroxy-chlorothalonil,Fungicide,Chloronitrile,Multi-site contact activity (FRAC M5),028343-61-5
+Acephate,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),030560-19-1
+Acetamiprid,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),135410-20-7
+Aldicarb,Insecticide,Carbamate,Acetylcholinesterase inhibitor (IRAC 1A),00016-06-3
+Aldicarb sulfone,Insecticide,Carbamate,Breakdown product of Aldicarb (IRAC 1A),001646-88-4
+Ametryn,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),000834-12-8
+Atrazine,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),001912-24-9
+Avermectin B1a,Antibiotic,Lactone,Glutamate-gated chloride channel (GluCl) allosteric modulators (IRAC 6),065195-55-3
+Azinphos methyl,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),000086-50-0
+Azoxystrobin,Fungicide,Methoxy-acrylate,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],131860-33-8
+Bendiocarb,Insecticide,Carbamate,Acetylcholinesterase inhibitor (IRAC 1A),022781-23-3
+Boscalid,Fungicide,Pyridine-carboxamide,Succinate dehydrogenase inhibitor (FRAC 7) [inhibition of respiratory chain in mitochondria],188425-85-6
+Bromuconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],116255-48-2
+Carbaryl,Insecticide,Carbamate,Acetylcholinesterase inhibitor (IRAC 1A),000063-25-2
+Carbofuran,Insecticide,Carbamate,Acetylcholinesterase inhibitor (IRAC 1A),001563-66-2
+Chlorantraniliprole,Insecticide,Anthranilic diamide,Ryanodine receptor modulator (IRAC 28),500008-45-7
+Chlorpyrifos,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),002921-88-2
+Chlorpyrifos methyl,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),005598-13-0
+Clomazone,Herbicide,Oxazolidinone,DOXP synthase inhibitor (HRAC 13),081777-89-1
+Clothianidin,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),210880-92-5
+Coumaphos,Miticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),000056-72-4
+Coumaphos oxon,Miticide,Organophosphate,Breakdown product of Coumaphos (IRAC 1B),000321-54-0
+Cyanazine,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),021725-46-2
+Cyantraniliprole,Insecticide,Anthranilic diamide,Ryanodine receptor modulator (IRAC 28),736994-63-1
+Cyflufenamid,Fungicide,Phenyl-acetamide,Unknown mode of action (FRAC U6),180409-60-3
+Cyprodinil,Fungicide,Anilino-pyrimidine,Inhibitor of methionine biosynthesis (FRAC 9) [inhibition of aminoacids and protein synthesis],121552-61-2
+Diazinon,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),000333-41-5
+Difenoconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],119446-68-3
+Diflubenzuron,Insecticide,Benzoylurea,"Inhibitor of chitin biosynthesis, type 0 (IRAC 15)",035367-38-5
+Dimoxystrobin,Fungicide,Oximino-acetamide,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],149961-52-4
+Dinotefuran,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),165252-70-0
+Diuron,Herbicide,Urea,Inhibitor of photosynthesis at PS II (HRAC 5),000330-54-1
+Fenamidone,Fungicide,Imidazolinone,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],161326-34-7
+Fenbuconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],114369-43-6
+Fenhexamid,Fungicide,Hydroxyanilide,Inhibitor of 3-Keto Reductase involved in C4-demethylation of sterols (FRAC 17) [inhibition of sterol biosynthesis in membrane],126833-17-8
+Fenpyroximate,Insecticide,Pyrazole,Mitochondrial complex I electron transport inhibitor (IRAC 21A) [inhibition of respiratory chain in mitochondria],111812-58-9
+(E)-Fenpyroximate,Insecticide,,,134098-61-6
+Fipronil,Insecticide,Phenylpyrazole,GABA-gated chloride channel blockers (IRAC 2),120068-37-3
+Fipronil sulfide,Insecticide,Phenylpyrazoles,Breakdown product of Fipronil (IRAC 2B),120067-83-6
+Flonicamid,Insecticide,Flonicamid,Chordotonal organ nicotinamidase inhibitor (IRAC 29),158062-67-0
+Fluazinam,Fungicide,"2,6-dinitro-aniline",Uncoupler of oxidative phosphorylarion (FRAC 29),079622-59-0
+Fludioxonil,Fungicide,Phenylpyrrole,Inhibitor of MAP kinase in osmotic signal transduction (FRAC 12),131341-86-1
+Fluometuron,Herbicide,,,002164-17-2
+Fluopicolide,Fungicide,Pyridinylmethyl-benzamide,Delocalisation of spectrin-like proteins (FRAC 43),239110-15-7
+Fluopyram,Fungicide,Pyridinyl-ethylbenzamide,Succinate dehydrogenase inhibitor (FRAC 7) [inhibition of respiratory chain in mitochondria],658066-35-4
+Fluoxastrobin,Fungicide,Dihydro-dioxazine,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],361377-29-9
+Flupyradifurone,Insecticide,Butenolide,Nicotinic acetylcholine receptor competitive modulator (IRAC 4D),951659-40-8
+Fluxapyroxad,Fungicide,Pyrazole-carboxamide,Succinate dehydrogenase inhibitor (FRAC 7) [inhibition of respiratory chain in mitochondria],907204-31-3
+Imidacloprid,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),138261-41-2
+Indoxacarb (+/-),Insecticide,Oxadiazine,Voltage-dependent sodium channel blocker (IRAC 22A),144171-61-9
+(S)-Indoxacarb,Insecticide,,,173584-44-6
+Malaoxon,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),001634-19-7
+Malathion,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),000121-75-5
+Mandipropamid,Fungicide,Mandelic acid amide,Inhibitor of Cellulose Synthase (FRAC 40) [inhibition of cell wall biosynthesis],000121-75-5
+Metalaxyl,Fungicide,Acylalanine,Inhibitor of RNA polymerase I (FRAC 4),057837-19-1
+Metazachlor,Herbicide,Chloroacetamide,Inhibitor of Very-Long-Chain Fatty Acids Synthase (HRAC 15) [inhibition of cell division],067129-08-2
+Metconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],125116-23-6
+Methiocarb,Insecticide,Carbamate,Acetylcholinesterase inhibitor (IRAC 1A),002032-65-7
+Methoxyfenozide,Insecticide,Diacylhydrazine,Ecdysone receptor agonist (IRAC 18),161050-58-4
+Metolachlor,Herbicide,Chloroacetamide,Inhibitor of Very-Long-Chain Fatty Acids Synthase (HRAC 15) [inhibition of cell division],051218-45-2
+Mevinphos,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),007786-34-7
+Myclobutanil,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],088671-89-0
+"2,4-DMPF",Miticide,Formamidine,Breakdown product of Amitraz (IRAC 19),033089-74-6
+Napropamide,Herbicide,Acetamide,Inhibitor of Very-Long-Chain Fatty Acids Synthase (HRAC 15) [inhibition of cell division],015299-99-7
+Nitenpyram,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),150824-47-8
+Pendimethalin,Herbicide,Dinitroanilines,Inhibition of microtubule assembly (HRAC 3),040487-42-1
+Penthiopyrad,Fungicide,Pyrazole-carboxamide,Succinate dehydrogenase inhibitor (FRAC 7) [inhibition of respiratory chain in mitochondria],183675-82-3
+Phosmet,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),000732-11-6
+Picoxystrobin,Fungicide,Methoxy-acrylate,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],117428-22-5
+Piperonyl butoxide,Synergist,Benzodioxole,CYP-450 inhibitor,000051-03-6
+Profenophos,Insecticide,Organophosphate,Acetylcholinesterase inhibitor (IRAC 1B),041198-08-7
+Prometon,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),001610-18-0
+Prometryn,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),007287-19-6
+Propazine,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),000139-40-2
+Propiconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],060207-90-1
+Pyraclostrobin,Fungicide,Methoxy-carbamate,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],175013-18-0
+Pyrimethanil,Fungicide,Anilino-pyrimidine,Inhibitor of methionine biosynthesis (FRAC 9) [inhibition of aminoacids and protein synthesis],175013-18-0
+Pyriproxyfen,Insecticide,Pyriproxyfen,Juvenile hormone receptor modulators (IRAC 7C),095737-68-1
+Spinetoram,Insecticide,Spinosyn,Nicotinic acetylcholine receptor allosteric modulator (IRAC 5),187166-40-1
+Spinosyn A,Insecticide,Tetracyclic macrolide,Nicotinic acetylcholine receptor (nAChR) allosteric modulators (IRAC 5),131929-60-7
+Spirotetramat,Insecticide,Tetronic and Tetramic acide derivatives,Inhibitors of acetyl-CoA carboxylase (IRAC 23),203313-25-1
+Sulfentrazone,Herbicide,Triazolinone,Inhibitor of protoporphyrinogen oxidase (HRAC 14),122836-35-5
+Sulfoxaflor,Insecticide,Sulfoximine,Nicotinic acetylcholine receptor competitive modulator (IRAC 4C),946578-00-3
+Tebuconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],107534-96-3
+Tebufenozide,Insecticide,Diacylhydrazine,Ecdysone receptor agonist (IRAC 18),112410-23-8
+Tebuthiuron,Herbicide,Urea,Inhibitor of photosynthesis at PS II (HRAC 5),034014-18-1
+Terbutryn,Herbicide,Triazine,Inhibitor of photosynthesis at PS II (HRAC 5),000886-50-0
+Tetraconazole,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],112281-77-3
+Tetramethrin,Insecticide,Pyrethroid,Inhibitor of deactivation of voltage-gated Sodium channels (IRAC 3A),007696-12-0
+Thiabendazole,Fungicide,Benzamidazole,Inhibitor of ß-tubulin assembly in mitosis (FRAC 1) [inhibition of mitosis],000148-79-8
+Thiacloprid,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),111988-49-9
+Thiamethoxam,Insecticide,Neonicotinoid,Nicotinic acetylcholine receptor competitive modulator (IRAC 4A),153719-23-4
+Thiobencarb,Herbicide,Thiocarbamate,Inhibitor of Very-Long-Chain Fatty Acids Synthase (HRAC 15) [inhibition of cell division],028249-77-6
+Thiophanate-methyl,Fungicide,Thiophanate,Inhibitor of ß-tubulin assembly in mitosis (FRAC 1) [inhibition of mitosis],023564-05-8
+Triadimefon,Fungicide,Triazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],043121-43-3
+Trifloxystrobin,Fungicide,Oximino-acetate,Quinone outside inhibitor (FRAC 11) [inhibition of respiratory chain in mitochondria],141517-21-7
+Triflumizole,Fungicide,Imidazole,Inhibitor of C14-demethylase (FRAC 3) [inhibition of sterol biosynthesis in membrane],068694-11-1

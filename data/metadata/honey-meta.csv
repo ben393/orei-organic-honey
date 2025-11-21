@@ -1,0 +1,147 @@
+Sample.ID,Colony.ID,Group,Brand,Store
+1,na,OG-HI,"Brand ""1""",Direct
+2,na,OG-HI,"Brand ""1""",Direct
+3,na,OG-HI,"Brand ""1""",Direct
+4,na,OG-HI,"Brand ""1""",Direct
+5,na,OG-HI,"Brand ""1""",Direct
+6,na,OG-HI,"Brand ""1""",Direct
+7,na,OG-HI,"Brand ""2""",Direct
+8,na,OG-HI,"Brand ""2""",Direct
+9,na,OG-HI,"Brand ""2""",Direct
+10,na,OG-HI,"Brand ""2""",Direct
+11,na,OG-HI,"Brand ""2""",Direct
+12,na,OG-HI,"Brand ""2""",Direct
+13,na,OG-HI,"Brand ""3""",Direct
+14,na,OG-HI,"Brand ""3""",Direct
+15,na,OG-HI,"Brand ""3""",Direct
+16,na,OG-HI,"Brand ""3""",Direct
+17,na,OG-HI,"Brand ""3""",Direct
+18,na,OG-HI,"Brand ""3""",Direct
+19,na,OG-HI,"Brand ""4""",Amazon
+20,na,OG-HI,"Brand ""4""",Amazon
+21,na,OG-HI,"Brand ""4""",Amazon
+22,na,OG-HI,"Brand ""4""",Amazon
+23,na,OG-HI,"Brand ""4""",Amazon
+24,na,OG-HI,"Brand ""4""",Amazon
+25,na,OG-HI,"Brand ""5""",Direct
+26,na,OG-HI,"Brand ""5""",Direct
+27,na,OG-HI,"Brand ""5""",Direct
+28,na,OG-HI,"Brand ""5""",Direct
+29,na,OG-HI,"Brand ""5""",Direct
+30,na,OG-HI,"Brand ""5""",Direct
+31,na,OG-IMP,Good & Gather,Target
+32,na,OG-IMP,Good & Gather,Target
+33,na,OG-IMP,Good & Gather,Target
+34,na,OG-IMP,Nature Nate's,Amazon
+35,na,OG-IMP,Nature Nate's,Amazon
+36,na,OG-IMP,Nature Nate's,Amazon
+37,na,OG-IMP,Dutch Gold,Amazon
+38,na,OG-IMP,Dutch Gold,Amazon
+39,na,OG-IMP,Dutch Gold,Amazon
+40,na,OG-IMP,Aunt Sue's,Amazon
+41,na,OG-IMP,Aunt Sue's,Amazon
+42,na,OG-IMP,Aunt Sue's,Amazon
+43,na,OG-IMP,Simply Nature,Aldi
+44,na,OG-IMP,Simply Nature,Aldi
+45,na,OG-IMP,Simply Nature,Aldi
+46,na,OG-IMP,Wegmans,Wegmans
+47,na,OG-IMP,Wegmans,Wegmans
+48,na,OG-IMP,Wegmans,Wegmans
+49,na,OG-IMP,Great Value,Walmart
+50,na,OG-IMP,Great Value,Walmart
+51,na,OG-IMP,Great Value,Walmart
+52,na,OG-IMP,Madhava,Tops
+53,na,OG-IMP,Madhava,Tops
+54,na,OG-IMP,Madhava,Tops
+55,na,OG-IMP,Wholesome,Amazon
+56,na,OG-IMP,Wholesome,Amazon
+57,na,OG-IMP,Wholesome,Amazon
+58,na,OG-IMP,365 Whole Foods,Amazon
+59,na,OG-IMP,365 Whole Foods,Amazon
+60,na,OG-IMP,365 Whole Foods,Amazon
+61,na,CNV,Good & Gather,Target
+62,na,CNV,Good & Gather,Target
+63,na,CNV,Good & Gather,Target
+64,na,CNV,Nature Nate's,Amazon
+65,na,CNV,Nature Nate's,Amazon
+66,na,CNV,Nature Nate's,Amazon
+67,na,CNV,Local Hive,Tops
+68,na,CNV,Local Hive,Tops
+69,na,CNV,Local Hive,Tops
+70,na,CNV,Aunt Sue's,Amazon
+71,na,CNV,Aunt Sue's,Amazon
+72,na,CNV,Aunt Sue's,Amazon
+73,na,CNV,Specialty Selected,Aldi
+74,na,CNV,Specialty Selected,Aldi
+75,na,CNV,Specialty Selected,Aldi
+76,na,CNV,Wegmans,Wegmans
+77,na,CNV,Wegmans,Wegmans
+78,na,CNV,Wegmans,Wegmans
+79,na,CNV,Great Value,Walmart
+80,na,CNV,Great Value,Walmart
+81,na,CNV,Great Value,Walmart
+82,na,CNV,Gunter's,Tops
+83,na,CNV,Gunter's,Tops
+84,na,CNV,Gunter's,Tops
+85,na,CNV,"Brand ""6""",Greenstar
+86,na,CNV,"Brand ""6""",Greenstar
+87,na,CNV,"Brand ""6""",Greenstar
+88,na,CNV,Amazon Fresh,Amazon
+89,na,CNV,Amazon Fresh,Amazon
+90,na,CNV,Amazon Fresh,Amazon
+91,147,OREI,na,na
+92,148,OREI,na,na
+93,153,OREI,na,na
+94,154,OREI,na,na
+95,155,OREI,na,na
+96,157,OREI,na,na
+97,158,OREI,na,na
+98,159,OREI,na,na
+99,168,OREI,na,na
+100,175,OREI,na,na
+101,186,OREI,na,na
+102,187,OREI,na,na
+103,188,OREI,na,na
+104,189,OREI,na,na
+105,191,OREI,na,na
+106,192,OREI,na,na
+107,193,OREI,na,na
+108,194,OREI,na,na
+109,163,OREI,na,na
+110,167,OREI,na,na
+111,169,OREI,na,na
+112,172,OREI,na,na
+113,177,OREI,na,na
+114,179,OREI,na,na
+115,183,OREI,na,na
+116,196,OREI,na,na
+117,101,OREI,na,na
+118,102,OREI,na,na
+119,103,OREI,na,na
+120,105,OREI,na,na
+121,106,OREI,na,na
+122,107,OREI,na,na
+123,108,OREI,na,na
+124,109,OREI,na,na
+125,110,OREI,na,na
+126,111,OREI,na,na
+127,112,OREI,na,na
+128,139,OREI,na,na
+129,140,OREI,na,na
+130,141,OREI,na,na
+131,142,OREI,na,na
+132,143,OREI,na,na
+133,144,OREI,na,na
+134,145,OREI,na,na
+135,150,OREI,na,na
+136,152,OREI,na,na
+137,156,OREI,na,na
+138,160,OREI,na,na
+139,165,OREI,na,na
+140,166,OREI,na,na
+141,171,OREI,na,na
+142,174,OREI,na,na
+143,176,OREI,na,na
+144,181,OREI,na,na
+145,182,OREI,na,na
+146,185,OREI,na,na
