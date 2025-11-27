@@ -6,6 +6,12 @@ output: html_document
 ```{r setup, message=F}
 library(tidyverse)   # Easier data manipulation
 library(readxl)      # Import Excel files directly
+library(sf)          # Spatial data
+library(crawlUtils)  # Provides function to expand st_bbox limits
+library(basemaps)    # Downloads base map for ggplot
+library(usmap)       # US map data
+library(ggspatial)   # Provides lengend scale and north for map
+library(ggrepel)     # geom_text_repel()
 library(khroma)      # Colors for heatmap
 library(patchwork)   # Arrange ggplots in grids
 library(gt)          # GTables
@@ -124,6 +130,79 @@ rm(list.H, list.H.clean)
 ### 2.1. Experimental apiary management
 
 #### Figure 1. Map of the Eastern United States indicating the locations of organic apiaries in the states of New York and Pennsylvania
+
+```{r fig1, fig.height=5, fig.width=4}
+# A dataframe of apiaries and GPS coordinates.
+df.coords <- read.csv("data/landscape/apiary-locations-OREI.csv")
+
+plot_map <- function(df_coords, res, expand, fPull) {
+  # Convert list of apiaries into coordinates to plot
+  map.coords <- df_coords %>% 
+    # mutate(Farm = str_replace(Apiary, " [1-9]", "")) %>% # If we want to use names
+    group_by(Farm.Redact) %>% 
+      summarise(across(c(Lat, Lon), ~mean(.)), .groups = "drop") %>% 
+    st_as_sf(coords = c("Lon", "Lat"), crs = 4326) %>% 
+    st_transform(crs = st_crs(3857)) # basemap requires EPSG 3857 web mercator
+  
+  # Get a basemap zoomed out slightly from the apiary coordinates
+  # Register for an API key at https://www.thunderforest.com/ and set the credential using
+  # basemaps::set_defaults()
+  map.base <- basemap_gglayer(ext         = st_expand(st_bbox(map.coords), ef=expand),
+                              map_service = "mapbox", map_type    = "outdoors",
+                              map_res     = res,      verbose     = F)
+  
+  # Retrieves the extents of the map we just downloaded
+  map.limits <- map.base$data %>% st_as_sf(coords = c("x", "y")) %>% st_bbox()
+  
+  # Assemble the map
+  map <- ggplot(data = map.coords) +
+    map.base + scale_fill_identity() + # Plot basemap in the colors it specifies
+
+    # Plot apiary coordinates
+    geom_sf(aes(geometry = geometry), pch = 21, fill = "black", color = "white", stroke = 1, size = 2) +
+    
+    # Set limits of map to those of basemap (hide other states)
+    # and remove padding between plot and axes
+    scale_x_continuous(limits = map.limits[c(1,3)], expand = c(0,0)) +
+    scale_y_continuous(limits = map.limits[c(2,4)], expand = c(0,0)) +
+
+  
+    annotation_north_arrow(location = "br",
+                           pad_y    = unit(0.75, "cm"), 
+                           pad_x    = unit(0.25, "cm"),
+                           style    = north_arrow_fancy_orienteering) +
+    
+    # Add a white gradient behind scale for readability. 
+    # See @link https://stackoverflow.com/a/72827753/5025767
+    annotation_custom(grob = grid::rasterGrob(
+      image = colorRampPalette(c("transparent", "white"), alpha = T)(10), # Gradient
+      # Anchor to bottom of plot. vjust positions bottom of rect. @ y = 0
+      x = unit(0.5, "npc"), y = unit(0, "npc"), vjust = 0, 
+      # Gradient is 100% of plot width
+      width = unit(1, "npc"), 
+      # Height is a multiple of the scale's Y padding
+      height = 4 * unit(0.25, "cm") )) +
+    
+    annotation_scale(location = "br", 
+                     pad_x    = unit(0.5, "cm")) +
+    
+    labs(caption = "Base map source: Mapbox, Open Street Map") +
+    
+    # Remove axis titles and gridlines
+    theme(axis.title = element_blank(),
+          panel.grid = element_blank(),
+          panel.border = element_rect(fill = NA),
+          plot.caption = element_text(hjust = 0, vjust = 12, 
+                                      color = "grey40", size = 8))
+  # Return figure 
+  return(map)
+}
+
+(fig.1 <- plot_map(df_coords  = df.coords, res = 0.4, expand = 2, fPull = 200) + 
+  theme(plot.caption = element_text(vjust = 0)))
+
+ggsave("Figure_1b.png", plot = fig.1, path = "figures", dpi = 500)
+```
 
 #### Differences in limits between both UHPLC-MS/MS batches
 
