@@ -126,10 +126,11 @@ data.H.Wide <- data.H.Long %>%
 # Clean up unused vars
 rm(list.H, list.H.clean)
 
-# A vector we can use to consistently arrange the order of pesticides in 
+# Vectors we can use to consistently arrange the order of pesticides in 
 # plots and tables
 styles.classLev <- c("Miticide", "Antibiotic", "Synergist", "Insecticide", 
                      "Fungicide", "Herbicide")
+styles.groupOrd <- c("OREI", "OG-HI", "OG-IMP", "CNV")
 styles.group    <- c("OREI" = "MNG ORG: Northeast US", "OG-HI" = "ORG: Hawaii", 
                      "OG-IMP" = "ORG: Grocery", "CNV" = "CNV: Grocery")
 ```
@@ -393,7 +394,111 @@ ggsave("Figure_2.png", plot = fig.2, path = "figures",
 
 #### Figure 3. Comparison of the number of pesticide residues in sampled honey and the summed amount of residues per sample
 
+```{r fig3}
+# Prepare data ------------------------------------------------------------------
+df.plots <- data.H.Long %>% 
+  group_by(across(c(-Cmpd, -ends_with(".ppb"), 
+      -Class.Pest, -ppb))) %>% 
+    summarize(
+      # Count the number of compounds where ppb > 0
+      num.Cmpd = length(ppb[ppb > 0]), 
+      # Simply sum the total ppb
+      ppb.sum  = sum(ppb),
+      .groups = "drop") %>% 
+    mutate(Brand = as_factor(ifelse(
+      is.na(Brand), 
+      as.character(Apiary), 
+      as.character(Brand)))) %>% 
+  select(-Apiary) %>% 
+  mutate(Group = factor(Group,ordered = T, levels = styles.groupOrd))
+
+# Define plot styles ---------------------------------------------------------------
+styles.colors <- color("davos", reverse = T)(6)[2:5]
+
+styles.bar <- list(
+
+  # See @link https://stackoverflow.com/a/65765891/5025767
+  geom_bar(stat = "summary", fun = "mean", 
+           position = position_dodge(0.9), width = 0.8,
+           color = "black", alpha = 1),
+  
+  # The height parameter should be low, so discrete values don't look continuous
+  geom_jitter(position=position_jitter(height = 0.01, width = 0.2),
+              alpha = 1, shape = 21, color = "black"),
+  
+  geom_errorbar(stat= "summary", fun.data = "mean_se", width = 0.1, linewidth=1.8, color="white"),
+  geom_errorbar(stat= "summary", fun.data = "mean_se", width = 0.1, linewidth=1),
+
+  scale_x_discrete(labels  = styles.group),
+  scale_fill_manual(values = styles.colors),
+  
+  # Define the chart theme
+  theme_classic(),
+  theme(legend.position="none"))
+
+styles.ylab.num    <- list(ylab("Number of residues"))
+styles.ylab.sumPPB <- list(ylab("Total residue amounts (ppb)"))
+
+# Build plots -------------------------------------------------------------------
+p.bar.signif <- tibble(
+  Sample.Type = rep("Honey", 4),
+  Group       = c("OG-HI", "OG-IMP", "CNV", "OREI"),
+  Contrast.Nr = c("a", "a", "b", "a"),
+  y.Nr        = rep(7, 4),
+  Contrast.Amt = c("ab", "a", "b", "a"),
+  y.Amt        = rep(30, 4))
+
+(fig.3 <- ((ggplot(
+  data = df.plots, aes(x = Group, y = num.Cmpd, fill=Group)) +
+  styles.ylab.num + 
+  geom_text(data = p.bar.signif,
+            aes(x = Group, y = y.Nr, label = Contrast.Nr))) /
+  
+(ggplot(
+  data = df.plots, aes(x = Group, y = ppb.sum, fill=Group)) +
+  styles.ylab.sumPPB + 
+  geom_text(data = p.bar.signif,
+            aes(x = Group, y = y.Amt, label = Contrast.Amt))) +
+    
+  plot_annotation(tag_levels = 'A') & 
+  styles.bar & coord_trans(y = "log1p")))
+
+ggsave("Figure_3.png", plot = fig.3, path = "figures", 
+       dpi = 500, width = 7, height = 5)
+```
+
 #### Table S3. Positive compound detections within each group of sampled honey
+
+
+```{r tabS3}
+df.heat %>% 
+  group_by(Cmpd, Class.Pest, Group) %>% 
+    summarize(
+      n.detects  = length(Cmpd[ppb>0]),
+      pct.detect = n.detects / n_distinct(Sample.ID),
+      mean       = mean(ppb),
+      se         = std_error(ppb),
+      max        = max(ppb),
+      Tol.OG.ppb = first(Tol.OG.ppb),
+      n.exceedTol = length(Cmpd[ppb>=Tol.OG.ppb]),
+      .groups    = "drop") %>% 
+  arrange(Group, desc(n.detects)) %>% 
+  relocate(Tol.OG.ppb, n.exceedTol, .after = Class.Pest) %>% 
+  filter(n.detects > 0) %>% 
+  group_by(Group) %>% 
+  mutate(Group = recode(Group, !!!styles.group)) %>% 
+  
+  gt(rowname_col = "Cmpd") %>% 
+    tab_stubhead("Compound") %>% 
+    fmt_percent(columns = 7,    decimals = 1) %>% 
+    fmt_number( columns = 8:10, decimals = 2) %>% 
+    cols_label(
+      Class.Pest = "Class",       n.detects   = "n",      pct.detect = "%",
+      mean       = "Mean",        se          = "S.E.",   max        = "Max",
+      Tol.OG.ppb = "Organic MRL", n.exceedTol = "n > MRL") %>% 
+    tab_spanner(  label = "Detections",    columns = 4:7) %>% 
+    tab_spanner(  label = "Amounts (ppb)", columns = 8:10)
+```
 
 #### Figure 4.
 
