@@ -1,25 +1,26 @@
 ---
-title: "Analysis"
+title: "Organic honey production may be possible in the Continental U.S."
+subtitle: "Data analysis, figures, and tables"
 output: html_document
 ---
 
 ```{r setup, message=F}
-library(tidyverse)   # Easier data manipulation
-library(readxl)      # Import Excel files directly
-library(sf)          # Spatial data
-library(crawlUtils)  # Provides function to expand st_bbox limits
-library(basemaps)    # Downloads base map for ggplot
-library(usmap)       # US map data
-library(ggspatial)   # Provides lengend scale and north for map
-library(ggrepel)     # geom_text_repel()
-library(khroma)      # Colors for heatmap
-library(patchwork)   # Arrange ggplots in grids
-library(gt)          # GTables
-library(glmmTMB)     # GLMMs
-library(performance) # check_overdispersion
-library(emmeans)     # Pairwise tests
-library(indicspecies)# Indicator Species Analysis 
-library(vegan)       # For ordinations
+library(tidyverse)      # Easier data manipulation
+library(readxl)         # Import Excel files directly
+library(sf)             # Spatial data
+library(crawlUtils)     # Provides function to expand st_bbox limits
+library(basemaps)       # Downloads base map for ggplot
+# library(usmap)        # US map data
+library(ggspatial)      # Provides lengend scale and north for map
+library(ggrepel)        # geom_text_repel()
+library(khroma)         # Colors for heatmap
+library(patchwork)      # Arrange ggplots in grids
+library(gt)             # GTables
+library(glmmTMB)        # GLMMs
+library(performance)    # check_overdispersion
+library(emmeans)        # Pairwise tests
+library(indicspecies)   # Indicator Species Analysis 
+library(vegan)          # For ordinations
 # devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis) # Pairwise PERMANOVA
 
@@ -141,15 +142,12 @@ styles.group    <- c("OREI" = "MNG ORG: Northeast US", "OG-HI" = "ORG: Hawaii",
 
 ```{r fig1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
 # A dataframe of apiaries and GPS coordinates.
-df.coords <- read.csv("data/landscape/apiary-locations-OREI.csv")
+df.coords <- read.csv("data/landscape/apiary-locations-OREI.csv") %>% 
+    st_as_sf(coords = c("Lon", "Lat"), crs = 4326)
 
 plot_map <- function(df_coords, res, expand, fPull) {
   # Convert list of apiaries into coordinates to plot
   map.coords <- df_coords %>% 
-    # mutate(Farm = str_replace(Apiary, " [1-9]", "")) %>% # If we want to use names
-    group_by(Farm.Redact) %>% 
-      summarise(across(c(Lat, Lon), ~mean(.)), .groups = "drop") %>% 
-    st_as_sf(coords = c("Lon", "Lat"), crs = 4326) %>% 
     st_transform(crs = st_crs(3857)) # basemap requires EPSG 3857 web mercator
   
   # Get a basemap zoomed out slightly from the apiary coordinates
@@ -167,7 +165,8 @@ plot_map <- function(df_coords, res, expand, fPull) {
     map.base + scale_fill_identity() + # Plot basemap in the colors it specifies
 
     # Plot apiary coordinates
-    geom_sf(aes(geometry = geometry), pch = 21, fill = "black", color = "white", stroke = 1, size = 2) +
+    geom_sf(aes(geometry = geometry), pch = 21, , stroke = 1, size = 2,
+            fill = "black", color = "white") +
     
     # Set limits of map to those of basemap (hide other states)
     # and remove padding between plot and axes
@@ -210,19 +209,31 @@ plot_map <- function(df_coords, res, expand, fPull) {
 # REMOVE before publication!!
 basemaps::set_defaults(map_service = "mapbox", map_token = "pk.eyJ1IjoiYmRlbW9yYXMiLCJhIjoiY21pZ3NlOWpxMGFuNDNkcThmdmk5b2lpNCJ9.qZXzdyBN60LF-F-3wbgN1w")
 
+# Create a spatial dataframe of farm locations and leader lines
+df.coordLab <- data.frame(
+  Farm.Redact = c("PA-3", "PA-2", "PA-1", "NY-3", "NY-2", "NY-1"),
+  lab.lon     = c(-75,    -78.6,  -78.6,  -75.3,  -75,    -77.5),
+  lab.lat     = c(41.2,   41.5,   40.5,   43.5,   42.4,   42.3)) %>% 
+  st_as_sf(coords = c("lab.lon", "lab.lat"), crs = 4326)
+
+# Create lines between apiaries and labels
+df.mapLines <- st_sf(
+  crs = st_crs(df.coordLab),
+  Farm.Redact = df.coordLab$Farm.Redact,
+  geometry    = st_sfc(mapply(function(p1, p2) {
+                  st_cast(st_union(p1, p2), "LINESTRING")
+                }, df.coordLab$geometry, df.coords$geometry, SIMPLIFY = FALSE)))
+
+# Plot the map
 (fig.1 <- plot_map(df_coords  = df.coords, res = 0.4, expand = 2) + 
-  geom_text_repel(aes(geometry = geometry, label = Farm.Redact),
-              stat         = "sf_coordinates",
-              box.padding  = 0.5, point.padding = 0.3, 
-              max.overlaps = 13, max.time = 1,
-              seed         = 42,
-              force_pull   = 200,
-              bg.r         = 0.2, bg.color = "white",
-              segment.size = unit(0.5, "mm"),
-              min.segment.length = 0.1) +
+    geom_sf(data = df.mapLines, linewidth = 0.5) +
+    geom_text_repel(data = df.coordLab, aes(label = Farm.Redact, geometry = geometry),
+                    stat = "sf_coordinates",
+                    bg.r = 0.2, bg.color = "white",
+                    force = 0) +
   theme(plot.caption = element_text(vjust = 0)))
 
-ggsave("Figure_1.png", plot = fig.1, path = "figures", 
+ggsave("Figure_1.png", plot = fig.1, path = "figures",
        dpi = 500, width = 4, height = 5)
 ```
 
@@ -468,7 +479,6 @@ ggsave("Figure_3.png", plot = fig.3, path = "figures",
 ```
 
 #### Table S3. Positive compound detections within each group of sampled honey
-
 
 ```{r tabS3}
 df.heat %>% 
