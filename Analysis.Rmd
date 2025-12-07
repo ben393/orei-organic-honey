@@ -1,7 +1,9 @@
 ---
 title: "Organic honey production may be possible in the Continental U.S."
 subtitle: "Data analysis, figures, and tables"
-output: html_document
+output: 
+  html_document:
+    highlight: tango
 ---
 
 ```{r setup, message=F}
@@ -140,9 +142,9 @@ styles.group    <- c("OREI" = "MNG ORG: Northeast US", "OG-HI" = "ORG: Hawaii",
 
 #### Figure 1. Map of the Eastern United States indicating the locations of organic apiaries in the states of New York and Pennsylvania
 
-```{r fig1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
+```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
 # A dataframe of apiaries and GPS coordinates.
-df.coords <- read.csv("data/landscape/apiary-locations-OREI.csv") %>% 
+sf.farms <- read.csv("data/landscape/apiary-locations-OREI.csv") %>% 
     st_as_sf(coords = c("Lon", "Lat"), crs = 4326)
 
 plot_map <- function(df_coords, res, expand, fPull) {
@@ -210,24 +212,24 @@ plot_map <- function(df_coords, res, expand, fPull) {
 basemaps::set_defaults(map_service = "mapbox", map_token = "pk.eyJ1IjoiYmRlbW9yYXMiLCJhIjoiY21pZ3NlOWpxMGFuNDNkcThmdmk5b2lpNCJ9.qZXzdyBN60LF-F-3wbgN1w")
 
 # Create a spatial dataframe of farm locations and leader lines
-df.coordLab <- data.frame(
+sf.labels <- data.frame(
   Farm.Redact = c("PA-3", "PA-2", "PA-1", "NY-3", "NY-2", "NY-1"),
   lab.lon     = c(-75,    -78.6,  -78.6,  -75.3,  -75,    -77.5),
   lab.lat     = c(41.2,   41.5,   40.5,   43.5,   42.4,   42.3)) %>% 
   st_as_sf(coords = c("lab.lon", "lab.lat"), crs = 4326)
 
 # Create lines between apiaries and labels
-df.mapLines <- st_sf(
-  crs = st_crs(df.coordLab),
-  Farm.Redact = df.coordLab$Farm.Redact,
+sf.lines <- st_sf(
+  crs = st_crs(sf.labels),
+  Farm.Redact = sf.labels$Farm.Redact,
   geometry    = st_sfc(mapply(function(p1, p2) {
                   st_cast(st_union(p1, p2), "LINESTRING")
-                }, df.coordLab$geometry, df.coords$geometry, SIMPLIFY = FALSE)))
+                }, sf.labels$geometry, sf.farms$geometry, SIMPLIFY = FALSE)))
 
 # Plot the map
-(fig.1 <- plot_map(df_coords  = df.coords, res = 0.4, expand = 2) + 
-    geom_sf(data = df.mapLines, linewidth = 0.5) +
-    geom_text_repel(data = df.coordLab, aes(label = Farm.Redact, geometry = geometry),
+(fig.1 <- plot_map(df_coords  = sf.farms, res = 0.4, expand = 2) + 
+    geom_sf(data = sf.lines, linewidth = 0.5) +
+    geom_text_repel(data = sf.labels, aes(label = Farm.Redact, geometry = geometry),
                     stat = "sf_coordinates",
                     bg.r = 0.2, bg.color = "white",
                     force = 0) +
@@ -258,7 +260,8 @@ df.limits %>%
   summarise(across(ends_with("_diff"), list(mean = mean, SE = std_error))) %>% 
   signif(digits = 2) %>% 
   # Values are easier to read if listed vertically
-  transpose(keep.names = "Difference")
+  transpose(keep.names = "Difference") %>% 
+  rename("Value" = V1)
 
 # Save most conservative limit (maximum) for reporting in output tables
 df.limits <- df.limits %>% 
@@ -268,7 +271,7 @@ df.limits <- df.limits %>%
 
 #### Table S2. List of 96 pesticides screened in honey samples
 
-```{r tabS2}
+```{r tab--S2}
 # Summary table by compound --------------------------------------------------------
 df.cmpdSumm <- data.H.Long %>% 
   group_by(Cmpd, Class.Pest) %>% 
@@ -318,7 +321,7 @@ df.cmpdSumm %>%
   
     tab_spanner(label = "Amounts (ppb)", columns = 4:10) %>% 
     cols_label(
-      ppb.mean   = "Mean",      ppb.se     = "S.E.",
+      ppb.mean   = "Mean",      ppb.se     = "SE",
       ppb.min    = "Min",       ppb.max    = "Max",
       pct.detect = "% Samples", Tol.OG.ppb = "Organic MRL",
       LOD.ppb    = "LOD",       LOQ.ppb    = "LOQ")
@@ -331,10 +334,10 @@ df.cmpdSumm %>%
 
 #### Figure 2. Heatmap showing overall pesticide residue content of the sampled honeys
 
-```{r fig2}
+```{r fig--2}
 # Prep data for plot ----------------------------------------------------------------
 df.none <- df.cmpdSumm %>% filter(n.detect == 0) %>% select(Cmpd)
-df.heat <- data.H.Long %>% 
+df.fig2.heat <- data.H.Long %>% 
   # Remove compounds w/ no detections
   anti_join(df.none, by = join_by(Cmpd)) %>% 
   
@@ -382,11 +385,11 @@ styles.heat <- list(
   scale_y_discrete(expand = c(0, 0))
 )
 
-df.heat <- df.heat %>% 
+df.fig2.heat <- df.fig2.heat %>% 
   mutate(Class.Pest = recode(Class.Pest, "Synergist" = "Syn."))
 
 # Plot overall exposure ------------------------------------------------------------
-(fig.2 <- ggplot(data = df.heat) +
+(fig.2 <- ggplot(data = df.fig2.heat) +
   geom_tile(aes(x = Sample.ID, y = Cmpd, fill = ppb), alpha = 1) +
   facet_grid(Class.Pest~Group, scales = "free", space = "free", 
              labeller = labeller(Group = styles.group)) +
@@ -405,9 +408,9 @@ ggsave("Figure_2.png", plot = fig.2, path = "figures",
 
 #### Figure 3. Comparison of the number of pesticide residues in sampled honey and the summed amount of residues per sample
 
-```{r fig3}
+```{r fig--3}
 # Prepare data ------------------------------------------------------------------
-df.plots <- data.H.Long %>% 
+df.figs <- data.H.Long %>% 
   group_by(across(c(-Cmpd, -ends_with(".ppb"), 
       -Class.Pest, -ppb))) %>% 
     summarize(
@@ -460,13 +463,13 @@ p.bar.signif <- tibble(
   y.Amt        = rep(30, 4))
 
 (fig.3 <- ((ggplot(
-  data = df.plots, aes(x = Group, y = num.Cmpd, fill=Group)) +
+  data = df.figs, aes(x = Group, y = num.Cmpd, fill=Group)) +
   styles.ylab.num + 
   geom_text(data = p.bar.signif,
             aes(x = Group, y = y.Nr, label = Contrast.Nr))) /
   
 (ggplot(
-  data = df.plots, aes(x = Group, y = ppb.sum, fill=Group)) +
+  data = df.figs, aes(x = Group, y = ppb.sum, fill=Group)) +
   styles.ylab.sumPPB + 
   geom_text(data = p.bar.signif,
             aes(x = Group, y = y.Amt, label = Contrast.Amt))) +
@@ -480,44 +483,154 @@ ggsave("Figure_3.png", plot = fig.3, path = "figures",
 
 #### Table S3. Positive compound detections within each group of sampled honey
 
-```{r tabS3}
-df.heat %>% 
-  group_by(Cmpd, Class.Pest, Group) %>% 
-    summarize(
-      n.detects  = length(Cmpd[ppb>0]),
-      pct.detect = n.detects / n_distinct(Sample.ID),
-      mean       = mean(ppb),
-      se         = std_error(ppb),
-      max        = max(ppb),
-      Tol.OG.ppb = first(Tol.OG.ppb),
-      n.exceedTol = length(Cmpd[ppb>=Tol.OG.ppb]),
-      .groups    = "drop") %>% 
-  arrange(Group, desc(n.detects)) %>% 
-  relocate(Tol.OG.ppb, n.exceedTol, .after = Class.Pest) %>% 
-  filter(n.detects > 0) %>% 
-  group_by(Group) %>% 
-  mutate(Group = recode(Group, !!!styles.group)) %>% 
+```{r tab--S3}
+df.fig2.heat %>%
+  group_by(Cmpd, Class.Pest, Group) %>%
+  summarize(
+    n.detects  = length(Cmpd[ppb > 0]),
+    pct.detect = n.detects / n_distinct(Sample.ID),
+    mean       = mean(ppb),
+    se         = std_error(ppb),
+    max        = max(ppb),
+    Tol.OG.ppb = first(Tol.OG.ppb),
+    n.exceedTol = length(Cmpd[ppb >= Tol.OG.ppb]),
+    .groups    = "drop"
+  ) %>%
+  arrange(Group, desc(n.detects)) %>%
+  relocate(Tol.OG.ppb, n.exceedTol, .after = Class.Pest) %>%
+  filter(n.detects > 0) %>%
+  group_by(Group) %>%
+  mutate(Group = recode(Group, !!!styles.group)) %>%
   
-  gt(rowname_col = "Cmpd") %>% 
-    tab_stubhead("Compound") %>% 
-    fmt_percent(columns = 7,    decimals = 1) %>% 
-    fmt_number( columns = 8:10, decimals = 2) %>% 
-    cols_label(
-      Class.Pest = "Class",       n.detects   = "n",      pct.detect = "%",
-      mean       = "Mean",        se          = "S.E.",   max        = "Max",
-      Tol.OG.ppb = "Organic MRL", n.exceedTol = "n > MRL") %>% 
-    tab_spanner(  label = "Detections",    columns = 4:7) %>% 
-    tab_spanner(  label = "Amounts (ppb)", columns = 8:10)
+  gt(rowname_col = "Cmpd") %>%
+  tab_stubhead("Compound") %>%
+  fmt_percent(columns = 7, decimals = 1) %>%
+  fmt_number(columns = 8:10, decimals = 2) %>%
+  cols_label(
+    Class.Pest  = "Class",
+    n.detects   = "n",
+    pct.detect  = "%",
+    mean        = "Mean",
+    se          = "SE",
+    max         = "Max",
+    Tol.OG.ppb  = "Organic MRL",
+    n.exceedTol = "n > MRL"
+  ) %>%
+  tab_spanner(label = "Detections", columns = 4:7) %>%
+  tab_spanner(label = "Amounts (ppb)", columns = 8:10)
 ```
 
-#### Figure 4.
+#### Figure 4. Non-metric multidimensional scaling (NMDS) ordination plot showing differences in contamination profiles between groups of honey.
 
-#### Table S4.
+```{r fig--4, message=FALSE}
+meta.Ord <- meta.Honey %>% 
+  select(Sample.ID, Group) %>%
+  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd)) %>% 
+  rename(Groups = Group)
 
-#### Table S5.
+# Data for NMDS --------------------------------------------------------------------
+# See @link https://stackoverflow.com/a/65609236/5025767
+df.fig4.NMDS <- data.H.Wide %>% 
+  column_to_rownames('Sample.ID') %>% 
+  select(-c(Colony.ID:Trt)) %>% 
+  filter(!if_all(everything(.), ~. == 0)) %>% # Remove samples w/ no detections.
+  select(-one_of(df.none %>% pull()))         # Removes compounds w/ no detections
+
+# Indicator Species Analysis -------------------------------------------------------
+# See @link https://uw.pressbooks.pub/appliedmultivariatestatistics/chapter/isa/
+
+# (1) Create clustering vector.
+# Length of cluster vector MUST equal number of rows in df.fig4.NMDS
+ISA.grp <- meta.Ord %>% 
+  inner_join(df.fig4.NMDS %>% rownames_to_column("Sample.ID"),
+             by = join_by(Sample.ID)) %>% 
+  pull(Groups, Sample.ID)
+
+# (2) Run the ISA.
+set.seed(42) # Reproducibility
+ISA <- multipatt(
+  x       = df.fig4.NMDS,
+  cluster = ISA.grp)
+
+# (3) Extract indicator species/compounds from the ISA
+ISA.tab <- ISA$sign %>% 
+  select(-index) %>% 
+  
+  # If compound is an indicator, replace value in table with group it indicates
+  mutate(across(starts_with("s."), ~ ifelse(. == 1, gsub("s.", "", cur_column()), NA))) %>%
+  
+  # Combine indicator groups into a single string, matching format from summary()
+  unite(Groups, starts_with("s."), sep = "+", na.rm = T) %>% 
+  rownames_to_column("Cmpd") %>% 
+  
+  # Only use significant compounds going forward
+  filter(p.value <= 0.05) %>%
+  
+  # Lookup A & B values from ISA output
+  rowwise() %>% 
+  mutate(A = as.data.frame(ISA$A)[Cmpd,Groups],
+                       B = as.data.frame(ISA$B)[Cmpd,Groups]) %>% 
+  ungroup() %>% 
+  relocate(c(A, B), .before = stat) %>% 
+
+  # Format for display
+ arrange(desc(stat)) %>% group_by(Groups)
+
+# Run NMDS --------------------------------------------------------------------------
+MDS.path <- "cache/nmds-result.rds"
+
+if(!file.exists(MDS.path)) { # If the NMDS result does NOT exist, make it!
+  set.seed(42)               # Ensures reproducibility
+  8 <- metaMDS(comm = df.fig4.NMDS,
+                 autotransform = F, distance = "bray", engine = "monoMDS",
+                 k = 2, model = "global", maxit = 999, trymax = 500,
+                 wascores = T, expand = T, noshare=F)
+  saveRDS(MDS, file = MDS.path)
+} else { # The file exists, read data from it.
+   MDS <- readRDS(file = MDS.path)
+}
+
+ISA.indic <- ISA.tab %>%   # Group col must be a factor to plot correctly
+  mutate(Groups = factor(Groups, levels = levels(ISA.grp))) %>% 
+  select(Cmpd, Groups)
+
+source("functions/plot_NMDS.R")
+# WITH Indicator compounds
+(fig.4 <- plot_NMDS(MDS = MDS, grp = ISA.grp, indic = ISA.indic, 
+                    labs = styles.group, colors = lighten(styles.colors, 0.2))[[1]])
+
+ggsave("Figure_4.png", plot = fig.4, path = "figures",
+       dpi = 500, width = 7, height = 5)
+```
+
+#### Table S4.Pairwise PERMANOVA comparing dissimilarity in composition of pesticides between groups of honey samples.
+
+```{r tab--S4}
+adonis2(df.fig4.NMDS ~ ISA.grp, method="bray")
+
+# Now do a pairwise PERMANOVA to see which groups differ
+pairwise.adonis(df.fig4.NMDS, factors=ISA.grp) %>% 
+  select(-Df, -p.value, -sig) %>% 
+  gt() %>% 
+  fmt_number(decimals = 3) %>% 
+  cols_label(
+    pairs = "Pairs", F.Model = "F model", R2 = html("R<sup>2</sup>"),
+    p.adjusted = "P adjusted"
+  )
+```
+
+#### Table S5. Result of indicator species analysis (ISA) describing the degree of association between groups of wax samples. 
+
+```{r tab--S5}
+# Returns list of indicator species in each group in a readable format
+# ISA.summary <- summary(ISA, indvalcomp = T)
+gt(ISA.tab) %>% 
+  fmt_number(decimals = 3) %>% 
+  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p")
+```
 
 ### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
 
-#### Figure 5.
+#### Figure 5. Samples exceeding surveillance MRLs for organic honey.
 
-#### Table S6.
+#### Table S6. Landscape composition within a 3 km radius of each of the 6 apiaries in 2024. 
