@@ -454,7 +454,7 @@ styles.ylab.num    <- list(ylab("Number of residues"))
 styles.ylab.sumPPB <- list(ylab("Total residue amounts (ppb)"))
 
 # Build plots -------------------------------------------------------------------
-p.bar.signif <- tibble(
+df.fig3.signif <- tibble(
   Sample.Type = rep("Honey", 4),
   Group       = c("OG-HI", "OG-IMP", "CNV", "OREI"),
   Contrast.Nr = c("a", "a", "b", "a"),
@@ -465,13 +465,13 @@ p.bar.signif <- tibble(
 (fig.3 <- ((ggplot(
   data = df.figs, aes(x = Group, y = num.Cmpd, fill=Group)) +
   styles.ylab.num + 
-  geom_text(data = p.bar.signif,
+  geom_text(data = df.fig3.signif,
             aes(x = Group, y = y.Nr, label = Contrast.Nr))) /
   
 (ggplot(
   data = df.figs, aes(x = Group, y = ppb.sum, fill=Group)) +
   styles.ylab.sumPPB + 
-  geom_text(data = p.bar.signif,
+  geom_text(data = df.fig3.signif,
             aes(x = Group, y = y.Amt, label = Contrast.Amt))) +
     
   plot_annotation(tag_levels = 'A') & 
@@ -523,98 +523,125 @@ df.fig2.heat %>%
 #### Figure 4. Non-metric multidimensional scaling (NMDS) ordination plot showing differences in contamination profiles between groups of honey.
 
 ```{r fig--4, message=FALSE}
-meta.Ord <- meta.Honey %>% 
+meta.Ord <- meta.Honey %>%
   select(Sample.ID, Group) %>%
-  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd)) %>% 
+  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd)) %>%
   rename(Groups = Group)
 
 # Data for NMDS --------------------------------------------------------------------
 # See @link https://stackoverflow.com/a/65609236/5025767
-df.fig4.NMDS <- data.H.Wide %>% 
-  column_to_rownames('Sample.ID') %>% 
-  select(-c(Colony.ID:Trt)) %>% 
-  filter(!if_all(everything(.), ~. == 0)) %>% # Remove samples w/ no detections.
-  select(-one_of(df.none %>% pull()))         # Removes compounds w/ no detections
+df.fig4.NMDS <- data.H.Wide %>%
+  column_to_rownames('Sample.ID') %>%
+  select(-c(Colony.ID:Trt)) %>%
+  filter(!if_all(everything(.), ~ . == 0)) %>% # Remove samples w/ no detections.
+  select(-one_of(df.none %>% pull()))          # Removes compounds w/ no detections
 
 # Indicator Species Analysis -------------------------------------------------------
 # See @link https://uw.pressbooks.pub/appliedmultivariatestatistics/chapter/isa/
 
-# (1) Create clustering vector.
+# =(1)= Create clustering vector.
 # Length of cluster vector MUST equal number of rows in df.fig4.NMDS
-ISA.grp <- meta.Ord %>% 
+ISA.grp <- meta.Ord %>%
   inner_join(df.fig4.NMDS %>% rownames_to_column("Sample.ID"),
-             by = join_by(Sample.ID)) %>% 
+             by = join_by(Sample.ID)) %>%
   pull(Groups, Sample.ID)
 
-# (2) Run the ISA.
+# =(2)= Run the ISA.
 set.seed(42) # Reproducibility
-ISA <- multipatt(
-  x       = df.fig4.NMDS,
-  cluster = ISA.grp)
+ISA <- multipatt(x = df.fig4.NMDS, cluster = ISA.grp)
 
-# (3) Extract indicator species/compounds from the ISA
-ISA.tab <- ISA$sign %>% 
-  select(-index) %>% 
+# =(3)= Extract indicator species/compounds from the ISA
+ISA.tab <- ISA$sign %>%
+  select(-index) %>%
   
   # If compound is an indicator, replace value in table with group it indicates
-  mutate(across(starts_with("s."), ~ ifelse(. == 1, gsub("s.", "", cur_column()), NA))) %>%
+  mutate(across(starts_with("s."), ~ ifelse(. == 1, gsub(
+    "s.", "", cur_column()
+  ), NA))) %>%
   
   # Combine indicator groups into a single string, matching format from summary()
-  unite(Groups, starts_with("s."), sep = "+", na.rm = T) %>% 
-  rownames_to_column("Cmpd") %>% 
+  unite(Groups, starts_with("s."), sep = "+", na.rm = T) %>%
+  rownames_to_column("Cmpd") %>%
   
   # Only use significant compounds going forward
   filter(p.value <= 0.05) %>%
   
   # Lookup A & B values from ISA output
-  rowwise() %>% 
-  mutate(A = as.data.frame(ISA$A)[Cmpd,Groups],
-                       B = as.data.frame(ISA$B)[Cmpd,Groups]) %>% 
-  ungroup() %>% 
+  rowwise() %>%
+  mutate(
+    A = as.data.frame(ISA$A)[Cmpd, Groups], 
+    B = as.data.frame(ISA$B)[Cmpd, Groups]) %>%
+  ungroup() %>%
   relocate(c(A, B), .before = stat) %>% 
-
+  
   # Format for display
- arrange(desc(stat)) %>% group_by(Groups)
+  arrange(desc(stat)) %>% group_by(Groups)
 
 # Run NMDS --------------------------------------------------------------------------
 MDS.path <- "cache/nmds-result.rds"
 
-if(!file.exists(MDS.path)) { # If the NMDS result does NOT exist, make it!
+if (!file.exists(MDS.path)) {
+  # If the NMDS result does NOT exist, make it!
   set.seed(42)               # Ensures reproducibility
-  8 <- metaMDS(comm = df.fig4.NMDS,
-                 autotransform = F, distance = "bray", engine = "monoMDS",
-                 k = 2, model = "global", maxit = 999, trymax = 500,
-                 wascores = T, expand = T, noshare=F)
+  8 <- metaMDS(
+    comm = df.fig4.NMDS,
+    autotransform = F,
+    distance = "bray",
+    engine = "monoMDS",
+    k = 2,
+    model = "global",
+    maxit = 999,
+    trymax = 500,
+    wascores = T,
+    expand = T,
+    noshare = F
+  )
   saveRDS(MDS, file = MDS.path)
-} else { # The file exists, read data from it.
-   MDS <- readRDS(file = MDS.path)
+} else {
+  # The file exists, read data from it.
+  MDS <- readRDS(file = MDS.path)
 }
 
 ISA.indic <- ISA.tab %>%   # Group col must be a factor to plot correctly
-  mutate(Groups = factor(Groups, levels = levels(ISA.grp))) %>% 
+  mutate(Groups = factor(Groups, levels = levels(ISA.grp))) %>%
   select(Cmpd, Groups)
 
 source("functions/plot_NMDS.R")
-# WITH Indicator compounds
-(fig.4 <- plot_NMDS(MDS = MDS, grp = ISA.grp, indic = ISA.indic, 
-                    labs = styles.group, colors = lighten(styles.colors, 0.2))[[1]])
 
-ggsave("Figure_4.png", plot = fig.4, path = "figures",
-       dpi = 500, width = 7, height = 5)
+(
+  fig.4 <- plot_NMDS(
+    MDS = MDS,
+    grp = ISA.grp,
+    indic = ISA.indic,
+    labs = styles.group,
+    colors = lighten(styles.colors, 0.2)
+  )[[1]]
+)
+
+ggsave(
+  "Figure_4.png",
+  plot = fig.4,
+  path = "figures",
+  dpi = 500,
+  width = 7,
+  height = 5
+)
 ```
 
 #### Table S4.Pairwise PERMANOVA comparing dissimilarity in composition of pesticides between groups of honey samples.
 
 ```{r tab--S4}
-adonis2(df.fig4.NMDS ~ ISA.grp, method="bray")
+adonis2(df.fig4.NMDS ~ ISA.grp, method = "bray")
 
 # Now do a pairwise PERMANOVA to see which groups differ
-pairwise.adonis(df.fig4.NMDS, factors=ISA.grp) %>% 
-  select(-Df, -p.value, -sig) %>% 
-  gt() %>% 
-  fmt_number(decimals = 3) %>% 
+pairwise.adonis(df.fig4.NMDS, factors = ISA.grp) %>%
+  select(-Df, -p.value, -sig) %>%
+  gt() %>%
+  fmt_number(decimals = 3) %>%
   cols_label(
-    pairs = "Pairs", F.Model = "F model", R2 = html("R<sup>2</sup>"),
+    pairs = "Pairs",
+    F.Model = "F model",
+    R2 = html("R<sup>2</sup>"),
     p.adjusted = "P adjusted"
   )
 ```
@@ -624,13 +651,75 @@ pairwise.adonis(df.fig4.NMDS, factors=ISA.grp) %>%
 ```{r tab--S5}
 # Returns list of indicator species in each group in a readable format
 # ISA.summary <- summary(ISA, indvalcomp = T)
-gt(ISA.tab) %>% 
-  fmt_number(decimals = 3) %>% 
-  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p")
+gt(ISA.tab) %>%
+  fmt_number(decimals = 3) %>%
+  cols_label(Cmpd = "Compound",
+             stat = "IV",
+             p.value = "p")
 ```
 
 ### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
 
 #### Figure 5. Samples exceeding surveillance MRLs for organic honey.
+
+```{r fig5}
+# Prepare data ----------------------------------------------------------------
+df.fig5A.MRLHeat <- df.fig2.heat %>%
+  group_by(Cmpd) %>%
+  filter(any(Exceed.Tol == "Yes")) %>%
+  mutate(Cmpd = case_match(Cmpd, "Piperonyl butoxide"  ~ "PBO", .default = Cmpd))
+
+df.fig5B.MRL <- df.fig2.heat %>%
+  group_by(Sample.ID, Group) %>%
+  summarize(Sample.Exceed = ifelse(any(Exceed.Tol == "Yes"), "Yes", "No"),
+            .groups = "drop")
+
+df.fig5B.signif <- tibble(
+  Group        = c("OG-HI", "OG-IMP", "CNV", "OREI"),
+  Contrast.MRL = c("b", "ab", "b", "a"),
+  y.MRL        = rep(0.9, 4)
+)
+
+# Fig 5A: Heatmap showing samples above tolerance --------------------------------
+fig.5A <- ggplot(df.fig5A.MRLHeat) +
+  geom_tile(aes(x = Sample.ID, y = Cmpd, fill = Exceed.Tol), alpha = 1) +
+  facet_grid(
+    Class.Pest ~ Group,
+    scales = "free",
+    space = "free",
+    labeller = labeller(Group = styles.group)
+  ) +
+  scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
+  styles.heat +
+  theme(legend.position = "left",
+        plot.caption.position = "panel") +
+  labs(caption = "Plus 93 more compounds not exceeding MRLs.")
+
+# Fig 5B: Plot w/ proportion of samples above MRL ---------------------------------
+fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
+  geom_bar(position = "fill") +
+  scale_x_discrete(labels  = styles.group) +
+  scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
+  ylab("\nProp. of samples >MRL\n") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+# Assemble combined figure
+(
+  fig.5 <- (fig.5A) /
+    free(fig.5B) +
+    plot_layout(heights = c(2, 3)) +
+    plot_annotation(tag_levels = 'A')
+)
+
+ggsave(
+  "Figure_5.png",
+  plot = fig.5,
+  path = "figures",
+  dpi = 500,
+  width = 7,
+  height = 5
+)
+```
 
 #### Table S6. Landscape composition within a 3 km radius of each of the 6 apiaries in 2024. 
