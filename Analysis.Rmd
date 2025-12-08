@@ -25,6 +25,7 @@ library(indicspecies)   # Indicator Species Analysis
 library(vegan)          # For ordinations
 # devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis) # Pairwise PERMANOVA
+library(MuMIn)          # AICC comparison
 
 source("functions/std_error.R") # Standard error calc
 ```
@@ -144,7 +145,9 @@ styles.group    <- c("OREI" = "MNG ORG: Northeast US", "OG-HI" = "ORG: Hawaii",
 
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
 # A dataframe of apiaries and GPS coordinates.
-sf.farms <- read.csv("data/landscape/apiary-locations-OREI.csv") %>% 
+meta.farms <- read.csv("data/landscape/apiary-locations-OREI.csv") 
+
+sf.farms <- meta.farms%>% 
     st_as_sf(coords = c("Lon", "Lat"), crs = 4326)
 
 plot_map <- function(df_coords, res, expand, fPull) {
@@ -722,4 +725,225 @@ ggsave(
 )
 ```
 
+### 3.3. Did landscape composition predict whether detected pesticide exposure?
+
+Here, I use the [`CropScapeR`](https://github.com/cbw1243/CropScapeR) package to download the data directly from R. I create a function, called `get_apiary_CDL()` that makes this process a little easier. Given a dataframe of apiary coordinates (columns `Apiary`, `Lon`, `Lat`), it will return a dataframe of percentages of each crop/landscape type within each buffer. For optimization, the function also accepts inputs of `gc_shp` (T/F, outputs a shapefile of the buffer), `gc_tiff` (whether to save TIFFs of the buffered CDL), `gc_CDL` (T/F, useful if we want to save shapefiles but not actually download data yet), and `gc_log`, (T/F, whether the function should log progress to the console).
+
 #### Table S6. Landscape composition within a 3 km radius of each of the 6 apiaries in 2024. 
+
+```{r tab--S6}
+# = (1) Download CDL data ===========================================================
+path.CDL <- "cache/cdl-cropscape-out.csv"
+
+# If the downloaded CDL data does NOT exist, create it! If it DOES exist, load it!
+if(!file.exists(path.CDL)) {
+
+  source("functions/get_apiary_CDL.R")
+
+  CDL.OREI.1km <- get_apiary_CDL(meta.farms, gc_rad=1,   gc_yr=2024, gc_dTol=40)
+  CDL.OREI.3km <- get_apiary_CDL(meta.farms, gc_rad=3,   gc_yr=2024, gc_dTol=75)
+  CDL.OREI.6km <- get_apiary_CDL(meta.farms, gc_rad=6.4, gc_yr=2024, gc_dTol=140)
+
+  data.CDL <- bind_rows(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
+  
+  rm(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
+  
+  write_csv(CDL, path.CDL)
+
+} else {
+  data.CDL <- read_csv(path.CDL, col_types = "ffffd")
+}
+rm(path.CDL)
+
+# = (2) Classify habitat ============================================================
+
+# Generate a list to classify manually
+# data.CDL %>% select(Crop) %>% unique() %>%
+#   write_csv("cdl-crops.csv")
+
+# Read the classified crops
+meta.cropHab <- read_csv("data/metadata/cdl-crops-classified.csv", col_types = "ff")
+
+# = (3) Create a dataframe combining contamination + landscape data =================
+df.landscape <- left_join(
+  # Join just the New York and Pennsylvania honey data
+  data.H.Long %>%
+    filter(Group == "OREI") %>%
+    group_by(Apiary, Trt, Colony.ID) %>%
+    summarise(
+      ppb.sum  = sum(ppb),
+      num.Cmpd = length(ppb[ppb > 0]),
+      .groups  = "drop"
+    ),
+  
+  # with the classified habitat dataframe
+  data.CDL %>%
+    left_join(meta.cropHab, by = "Crop") %>%
+    group_by(Apiary, Year, Rad.km, Habitat) %>%
+    summarize(Pct.Habitat = sum(Pct), .groups = "drop"),
+  
+  by = join_by(Apiary),
+  relationship = "many-to-many"
+) %>% 
+  
+  # Wider format
+  pivot_wider(
+    names_from = Habitat,
+    values_from = Pct.Habitat,
+    names_prefix = "Pct.",
+    values_fill = 0
+  ) %>% 
+  
+  pivot_wider(
+    names_from = Rad.km,
+    values_from = starts_with("Pct."),
+    names_glue = "{.value}_{Rad.km}km"
+  )
+
+# = (4) Summary table ==============================================================
+df.landscape %>%
+  select(Apiary, ends_with("_3km")) %>% unique() %>%
+  left_join(select(meta.farms, Apiary, Farm.Redact), by = join_by(Apiary)) %>%
+  select(-Apiary) %>%
+  relocate(Farm.Redact, .before = everything()) %>%
+  arrange(Farm.Redact) %>%
+  gt() %>%
+  fmt_number(decimals = 2) %>%
+  tab_spanner(label = "Percent Habitat", columns = 3:5) %>%
+  cols_label(
+    Farm.Redact  = "Apiary",
+    Pct.Ag_3km   = "Ag",
+    Pct.Semi_3km = "Semi",
+    Pct.Dev_3km  = "Dev",
+    Pct.Nat_3km  = "Nat"
+  )
+  
+```
+
+#### Table S7. Summary of GLMMs used to examine the relationship between landscape composition and pesticide contamination in New York and Pennsylvania honey
+
+```{r tab--S7, message=FALSE}
+m.land.sum     <- glmmTMB(ppb.sum ~ Pct.Ag_1km + Pct.Ag_3km + Pct.Ag_6.4km + 
+                          Pct.Semi_1km + Pct.Semi_3km + Pct.Semi_6.4km + Pct.Dev_1km + 
+                          Pct.Dev_3km + Pct.Dev_6.4km + (1|Apiary), 
+                          data   = df.landscape,
+                          family = "tweedie",
+                          na.action = "na.fail")
+
+m.land.sumNULL <- glmmTMB(ppb.sum ~ (1|Apiary), 
+                          data   = df.landscape,
+                          family = "tweedie",
+                          na.action = "na.fail")
+
+m.land.num     <- glmmTMB(num.Cmpd ~ Pct.Ag_1km + Pct.Ag_3km + Pct.Ag_6.4km + 
+                          Pct.Semi_1km + Pct.Semi_3km + Pct.Semi_6.4km + Pct.Dev_1km + 
+                          Pct.Dev_3km + Pct.Dev_6.4km + (1|Apiary), 
+                          data   = df.landscape,
+                          family = "poisson",
+                          na.action = "na.fail")
+
+m.land.numNULL <- glmmTMB(num.Cmpd ~ (1|Apiary), 
+                          data   = df.landscape,
+                          family = "poisson",
+                          na.action = "na.fail")
+
+# Function implements dredge() with custom outputs: 
+# R^2 and results from a likelihood ratio test
+# It also saves results in a table for publication
+do_dredge <- function(model, nModel) {
+  out <- dredge(
+    model,
+    m.lim = c(0, 1),
+    extra = list(
+      "Rsq" = function(x)
+        r.squaredLR(x, nModel),
+      "LRtest" = function(x) {
+        anova <- anova(x, nModel)
+        c(
+          "Chisq" = anova$Chisq[2],
+          "df"    = anova$`Chi Df`[2],
+          "p"     = anova$`Pr(>Chisq)`[2]
+        )
+      },
+      "model.rel" = function(x)
+        fixef(x)$cond[2] %>% unname() %>% sign()
+    )
+  )
+  
+  tab <- out %>%
+    # I'll convert the wide output from dredge() and list the predictor(s) in a column
+    # First, column names need to be clean
+    rename_with( ~ make.names(.) %>% str_remove("\\.$")) %>%
+    select(-cond..Int., -disp..Int.) %>%
+    # If we have a numeric value for the predictor, replace value with the predictor
+    mutate(across(starts_with("cond."), ~ ifelse(
+      !is.na(.), gsub("cond.", "", cur_column()), NA
+    ))) %>%
+    # Combine predictor names into single column
+    unite(Predictor,
+          starts_with("cond."),
+          sep = " + ",
+          na.rm = T) %>%
+    # Remove null model and row names
+    mutate(Predictor = ifelse(Predictor == "", "Null model", Predictor)) %>%
+    remove_rownames()
+  
+  return(list(table = tab, models = out))
+}
+
+df.land.dredge <- bind_rows(
+  do_dredge(m.land.sum, m.land.sumNULL)$table %>% 
+    mutate(Response = "Sum", .before = Predictor),
+  
+  do_dredge(m.land.num, m.land.numNULL)$table %>% 
+    mutate(Response = "Num", .before = Predictor)
+)
+
+df.land.dredge %>% 
+  select(Response, Predictor, model.rel, starts_with("LRtest"), AICc, delta) %>% 
+  
+  # Format data within table
+  separate_wider_delim(
+    Predictor,
+    delim = "_",
+    names = c("Habitat", "Radius"),
+    too_few = "align_start"
+  ) %>% 
+  
+  mutate(
+    Response = case_match(
+      Response,
+      "Sum" ~ "Additive amount of residues",
+      "Num" ~ "Number of compounds per sample"),
+    Habitat = case_match(
+      Habitat,
+      "Pct.Semi"  ~ "Seminatural",
+      "Pct.Dev" ~ "Developed",
+      "Pct.Ag" ~ "Agricultural",
+      .default = Habitat
+    ),
+    model.rel = as.character(model.rel),
+    model.rel = case_match(
+      model.rel, 
+      "1" ~ "Positive", 
+      "-1" ~ "Negative", 
+      .default = model.rel)
+  ) %>% 
+  gt(groupname_col = "Response") %>%
+  tab_options(row_group.as_column = T) %>%
+  tab_stubhead("Response") %>%
+  tab_spanner(label = "Predictor", columns = 2:3) %>%
+  cols_label(
+    Radius = "Radius (km)",
+    model.rel = "Relationship",
+    LRtest.Chisq = html("&Chi;<sup>2</sup>"),
+    LRtest.df = "df",
+    LRtest.p = "p",
+    delta = html("&Delta;AICc")
+  ) %>%
+  fmt_number(columns = c(5, 7:9), decimals = 3) %>%
+  tab_style(
+    style     = list(cell_text(weight = "bold")),
+    locations = cells_body(columns = LRtest.p, rows = LRtest.p <= 0.05)
+  )
+```

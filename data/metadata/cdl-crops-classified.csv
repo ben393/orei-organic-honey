@@ -1,0 +1,73 @@
+﻿Crop,Habitat
+Corn,Ag
+Sorghum,Ag
+Soybeans,Ag
+Sweet Corn,Ag
+Barley,Ag
+Spring Wheat,Ag
+Winter Wheat,Ag
+Dbl Crop WinWht/Soybeans,Ag
+Rye,Ag
+Oats,Ag
+Canola,Ag
+Alfalfa,Ag
+Other Hay/Non Alfalfa,Semi
+Dry Beans,Ag
+Cucumbers,Ag
+Clover/Wildflowers,Semi
+Peaches,Ag
+Developed/Open Space,Dev
+Developed/Low Intensity,Dev
+Developed/Medium Intensity,Dev
+Developed/High Intensity,Dev
+Barren,Nat
+Deciduous Forest,Nat
+Evergreen Forest,Nat
+Mixed Forest,Nat
+Shrubland,Nat
+Grass/Pasture,Semi
+Woody Wetlands,Nat
+Herbaceous Wetlands,Nat
+Triticale,Ag
+Peppers,Ag
+Squash,Ag
+Dbl Crop WinWht/Corn,Ag
+Pumpkins,Ag
+Sunflowers,Ag
+Other Crops,Ag
+Sod/Grass Seed,Ag
+Open Water,Nat
+Dbl Crop Oats/Corn,Ag
+Dbl Crop Soybeans/Oats,Ag
+Fallow/Idle Cropland,Semi
+Apples,Ag
+Christmas Trees,Ag
+Tomatoes,Ag
+Cabbage,Ag
+Misc Vegs & Fruits,Ag
+Dbl Crop Barley/Corn,Ag
+Switchgrass,Ag
+Plums,Ag
+Dbl Crop Triticale/Corn,Ag
+Dbl Crop WinWht/Sorghum,Ag
+Dbl Crop Barley/Soybeans,Ag
+Buckwheat,Ag
+Strawberries,Ag
+Rice,Ag
+Onions,Ag
+Speltz,Ag
+Millet,Ag
+Potatoes,Ag
+Broccoli,Ag
+Peas,Ag
+Hops,Ag
+Cherries,Ag
+Grapes,Ag
+Pears,Ag
+Sugarbeets,Ag
+Greens,Ag
+Blueberries,Ag
+Carrots,Ag
+Aquaculture,Ag
+Other Small Grains,Ag
+Cauliflower,Ag
