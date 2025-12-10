@@ -39,14 +39,25 @@ First, we import some basic metadata on the honey samples, pesticides, USDA orga
 
 ```{r importMetaData, message=FALSE}
 # Import metadata
-meta.Honey <- read_csv("data/metadata/honey-meta.csv", na="na",
-                       col_types = "fffff", col_select = -Store)
-meta.Cmpds <- read_csv("data/metadata/pesticide-info-OREI.csv",   
-                       col_types = "fffcc")
-meta.Tols  <- read_csv("data/metadata/pesticide-tolerances.csv",
-                       col_types = "fdf")
-meta.Cols  <- read_csv("data/metadata/colonies-OREI.csv",
-                       col_types = "fffff", col_select = c(-Position, -Pi))
+meta.Honey <- read_csv(
+  "data/metadata/honey-meta.csv",
+  na = "na",
+  col_types = "fffff",
+  col_select = -Store
+)
+meta.Cmpds <- read_csv(
+  "data/metadata/pesticide-info-OREI.csv",
+  col_types = "fffcc"
+)
+meta.Tols <- read_csv(
+  "data/metadata/pesticide-tolerances.csv",
+  col_types = "fdf"
+)
+meta.Cols <- read_csv(
+  "data/metadata/colonies-OREI.csv",
+  col_types = "fffff",
+  col_select = c(-Position, -Pi)
+)
 ```
 
 Next, I need to import the Excel files from the Cornell Chemical Ecology Core Facility and convert them to a rectangular format for analysis in R. I created a function, `read_pesticides()`, that does this. The function pivots the pesticide data and tacks on the columns containing the limits of quantification and detection. Some important steps include:
@@ -59,7 +70,7 @@ I also follow guidelines in [USDA Publication 2613: Responding to Results from P
 
 ```{r importExcel, message=F}
 source("functions/read_pesticides.R")
-
+# fmt: skip
 data.H1.raw <- read_pesticides(
   frp_ss       = "data/pesticides/2025-04-09_BDM_Results_Project79.xlsx",
   frp_tab      = "Honey",
@@ -67,7 +78,7 @@ data.H1.raw <- read_pesticides(
   frp_lims     = "E78:CW80",
   frp_pestName = "E4:CW4",
   frp_limUnits = "ng")
-
+# fmt: skip
 data.H2.raw <- read_pesticides(
   frp_ss       = "data/pesticides/2025-04-09_BDM_Results_Project79.xlsx",
   frp_tab      = "Honey",
@@ -79,14 +90,14 @@ data.H2.raw <- read_pesticides(
 # Store both honey dataframes in a list
 list.H <- list(
   H1 = data.H1.raw,
-  H2 = data.H2.raw)
+  H2 = data.H2.raw
+)
 rm(data.H1.raw, data.H2.raw)
 
 # I create a function that cleans up the pesticide data.
 # It is a function so I can use the function on both batches of honey data at once
 clean_pesticide_data <- function(x) {
-  
-  if(!any(grepl("ULOQ", names(x)))) {
+  if (!any(grepl("ULOQ", names(x)))) {
     # If dataset reports ULOL vs ULOQ.
     # Mutate() functions below won't work unless we have an ULOQ value.
     # So I set this to NA just in case it's different from ULOQ
@@ -95,52 +106,67 @@ clean_pesticide_data <- function(x) {
   }
 
   # <LOQs or >ULOQs get replaced with LOQ or ULOQ value, respectively
-  x <- x %>% mutate(
-    ppb  = case_match(ppb, "<LOQ"   ~ as.character(LOD.ppb),
-                           ">ULOQ"  ~ as.character(ULOQ.ppb),
-                           .default = as.character(ppb)),
-    ppb  = as.numeric(ppb),
-    Cmpd = as.factor(Cmpd))
-  
+  x <- x %>%
+    mutate(
+      ppb = case_match(
+        ppb,
+        "<LOQ" ~ as.character(LOD.ppb),
+        ">ULOQ" ~ as.character(ULOQ.ppb),
+        .default = as.character(ppb)
+      ),
+      ppb = as.numeric(ppb),
+      Cmpd = as.factor(Cmpd)
+    )
+
   # Now we can drop the placeholder ULOQ column
-  if(exists("ULOQ.col")) x <- x %>% select(-starts_with("ULOQ"))
+  if (exists("ULOQ.col")) {
+    x <- x %>% select(-starts_with("ULOQ"))
+  }
   return(x)
 }
 
 # Clean up both batches of the honey dataset at once
-list.H.clean <- map(list.H, ~clean_pesticide_data(.x))
+list.H.clean <- map(list.H, ~ clean_pesticide_data(.x))
 
 # Combine both files
-data.H.Long <- bind_rows(list.H.clean[["H1"]], list.H.clean[["H2"]]) %>% 
-  separate_wider_delim(Sample.ID, delim=" ", names=c("Sample.Type","Sample.ID")) %>%
+data.H.Long <- bind_rows(list.H.clean[["H1"]], list.H.clean[["H2"]]) %>%
+  separate_wider_delim(
+    Sample.ID,
+    delim = " ",
+    names = c("Sample.Type", "Sample.ID")
+  ) %>%
   mutate(
     Sample.ID = as.factor(as.integer(Sample.ID)),
-    Cmpd      = as.factor(Cmpd),
-    ppb       = as.numeric(ppb)) %>% 
-  left_join(meta.Cmpds %>% select(Cmpd, Class.Pest), by = join_by(Cmpd)) %>% 
-  left_join(meta.Honey, by = join_by(Sample.ID)) %>% 
-  left_join(meta.Cols,  by = join_by(Colony.ID)) %>%
-  
-  select(Sample.ID, Colony.ID, Group, Brand, Apiary, Trt, Cmpd, Class.Pest, ppb, 
-         ends_with(".ppb"))
+    Cmpd = as.factor(Cmpd),
+    ppb = as.numeric(ppb)
+  ) %>%
+  left_join(meta.Cmpds %>% select(Cmpd, Class.Pest), by = join_by(Cmpd)) %>%
+  left_join(meta.Honey, by = join_by(Sample.ID)) %>%
+  left_join(meta.Cols, by = join_by(Colony.ID)) %>%
+  # fmt: skip
+  select(Sample.ID, Colony.ID, Group, Brand, Apiary, Trt, Cmpd, Class.Pest, ppb,
+    ends_with(".ppb")
+  )
 
-data.H.Wide <- data.H.Long %>% 
-  select(-Class.Pest, -ends_with(".ppb")) %>% 
+data.H.Wide <- data.H.Long %>%
+  select(-Class.Pest, -ends_with(".ppb")) %>%
   pivot_wider(names_from = Cmpd, values_from = ppb)
 
 # Clean up unused vars
 rm(list.H, list.H.clean)
 
-# Vectors we can use to consistently arrange the order of pesticides in 
+# Vectors we can use to consistently arrange the order of pesticides in
 # plots and tables
-styles.classLev <- c("Miticide",
-                     "Antibiotic",
-                     "Synergist",
-                     "Insecticide",
-                     "Fungicide",
-                     "Herbicide")
+styles.classLev <- c(
+  "Miticide",
+  "Antibiotic",
+  "Synergist",
+  "Insecticide",
+  "Fungicide",
+  "Herbicide"
+)
 styles.groupOrd <- c("OREI", "OG-HI", "OG-IMP", "CNV")
-styles.group    <- c(
+styles.group <- c(
   "OREI" = "MNG ORG: New York &\nPennsylvania",
   "OG-HI" = "ORG: Hawaii",
   "OG-IMP" = "ORG: Grocery\nImported",
@@ -154,69 +180,92 @@ styles.group    <- c(
 
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
 # A dataframe of apiaries and GPS coordinates.
-meta.farms <- read.csv("data/landscape/apiary-locations-OREI.csv") 
+meta.farms <- read.csv("data/landscape/apiary-locations-OREI.csv")
 
-sf.farms <- meta.farms%>% 
-    st_as_sf(coords = c("Lon", "Lat"), crs = 4326)
+sf.farms <- meta.farms %>%
+  st_as_sf(coords = c("Lon", "Lat"), crs = 4326)
 
 plot_map <- function(df_coords, res, expand, fPull) {
   # Convert list of apiaries into coordinates to plot
-  map.coords <- df_coords %>% 
+  map.coords <- df_coords %>%
     st_transform(crs = st_crs(3857)) # basemap requires EPSG 3857 web mercator
-  
+
   # Get a basemap zoomed out slightly from the apiary coordinates
   # Register for an API key at https://www.thunderforest.com/ and set the credential using
   # basemaps::set_defaults()
-  map.base <- basemap_gglayer(ext         = st_expand(st_bbox(map.coords), ef=expand),
-                              map_service = "mapbox", map_type    = "outdoors",
-                              map_res     = res,      verbose     = F)
-  
+  map.base <- basemap_gglayer(
+    ext = st_expand(st_bbox(map.coords), ef = expand),
+    map_service = "mapbox",
+    map_type = "outdoors",
+    map_res = res,
+    verbose = F
+  )
+
   # Retrieves the extents of the map we just downloaded
   map.limits <- map.base$data %>% st_as_sf(coords = c("x", "y")) %>% st_bbox()
-  
+
   # Assemble the map
   map <- ggplot(data = map.coords) +
-    map.base + scale_fill_identity() + # Plot basemap in the colors it specifies
+    map.base +
+    scale_fill_identity() + # Plot basemap in the colors it specifies
 
     # Plot apiary coordinates
-    geom_sf(aes(geometry = geometry), pch = 21, , stroke = 1, size = 2,
-            fill = "black", color = "white") +
-    
+    geom_sf(
+      aes(geometry = geometry),
+      pch = 21,
+      stroke = 1,
+      size = 2,
+      fill = "black",
+      color = "white"
+    ) +
+
     # Set limits of map to those of basemap (hide other states)
     # and remove padding between plot and axes
-    scale_x_continuous(limits = map.limits[c(1,3)], expand = c(0,0)) +
-    scale_y_continuous(limits = map.limits[c(2,4)], expand = c(0,0)) +
+    scale_x_continuous(limits = map.limits[c(1, 3)], expand = c(0, 0)) +
+    scale_y_continuous(limits = map.limits[c(2, 4)], expand = c(0, 0)) +
 
     # North arrow
-    annotation_north_arrow(location = "br",
-                           pad_y    = unit(0.75, "cm"), 
-                           pad_x    = unit(0.25, "cm"),
-                           style    = north_arrow_fancy_orienteering) +
-    
-    # Add a white gradient behind scale for readability. 
+    annotation_north_arrow(
+      location = "br",
+      pad_y = unit(0.75, "cm"),
+      pad_x = unit(0.25, "cm"),
+      style = north_arrow_fancy_orienteering
+    ) +
+
+    # Add a white gradient behind scale for readability.
     # See @link https://stackoverflow.com/a/72827753/5025767
-    annotation_custom(grob = grid::rasterGrob(
-      image = colorRampPalette(c("transparent", "white"), alpha = T)(10), # Gradient
-      # Anchor to bottom of plot. vjust positions bottom of rect. @ y = 0
-      x = unit(0.5, "npc"), y = unit(0, "npc"), vjust = 0, 
-      # Gradient is 100% of plot width
-      width = unit(1, "npc"), 
-      # Height is a multiple of the scale's Y padding
-      height = 4 * unit(0.25, "cm") )) +
-    
+    annotation_custom(
+      grob = grid::rasterGrob(
+        image = colorRampPalette(c("transparent", "white"), alpha = T)(10), # Gradient
+        # Anchor to bottom of plot. vjust positions bottom of rect. @ y = 0
+        x = unit(0.5, "npc"),
+        y = unit(0, "npc"),
+        vjust = 0,
+        # Gradient is 100% of plot width
+        width = unit(1, "npc"),
+        # Height is a multiple of the scale's Y padding
+        height = 4 * unit(0.25, "cm")
+      )
+    ) +
+
     # Map scale
-    annotation_scale(location = "br", 
-                     pad_x    = unit(0.5, "cm")) +
-    
+    annotation_scale(location = "br", pad_x = unit(0.5, "cm")) +
+
     labs(caption = "Base map source: Mapbox, Open Street Map") +
-    
+
     # Remove axis titles and gridlines
-    theme(axis.title   = element_blank(),
-          panel.grid   = element_blank(),
-          panel.border = element_rect(fill = NA),
-          plot.caption = element_text(hjust = 0, vjust = 12, 
-                                      color = "grey40", size = 8))
-  # Return figure 
+    theme(
+      axis.title = element_blank(),
+      panel.grid = element_blank(),
+      panel.border = element_rect(fill = NA),
+      plot.caption = element_text(
+        hjust = 0,
+        vjust = 12,
+        color = "grey40",
+        size = 8
+      )
+    )
+  # Return figure
   return(map)
 }
 
@@ -224,6 +273,7 @@ plot_map <- function(df_coords, res, expand, fPull) {
 basemaps::set_defaults(map_service = "mapbox", map_token = "pk.eyJ1IjoiYmRlbW9yYXMiLCJhIjoiY21pZ3NlOWpxMGFuNDNkcThmdmk5b2lpNCJ9.qZXzdyBN60LF-F-3wbgN1w")
 
 # Create a spatial dataframe of farm locations and leader lines
+# # fmt: skip
 sf.labels <- data.frame(
   Farm.Redact = c("PA-3", "PA-2", "PA-1", "NY-3", "NY-2", "NY-1"),
   lab.lon     = c(-75,    -78.6,  -78.6,  -75.3,  -75,    -77.5),
@@ -234,105 +284,131 @@ sf.labels <- data.frame(
 sf.lines <- st_sf(
   crs = st_crs(sf.labels),
   Farm.Redact = sf.labels$Farm.Redact,
-  geometry    = st_sfc(mapply(function(p1, p2) {
-                  st_cast(st_union(p1, p2), "LINESTRING")
-                }, sf.labels$geometry, sf.farms$geometry, SIMPLIFY = FALSE)))
+  geometry = st_sfc(mapply(
+    function(p1, p2) {
+      st_cast(st_union(p1, p2), "LINESTRING")
+    },
+    sf.labels$geometry,
+    sf.farms$geometry,
+    SIMPLIFY = FALSE
+  ))
+)
 
 # Plot the map
-(fig.1 <- plot_map(df_coords  = sf.farms, res = 0.4, expand = 2) + 
-    geom_sf(data = sf.lines, linewidth = 0.5) +
-    geom_text_repel(data = sf.labels, aes(label = Farm.Redact, geometry = geometry),
-                    stat = "sf_coordinates",
-                    bg.r = 0.2, bg.color = "white",
-                    force = 0) +
+(fig.1 <- plot_map(df_coords = sf.farms, res = 0.4, expand = 2) +
+  geom_sf(data = sf.lines, linewidth = 0.5) +
+  geom_text_repel(
+    data = sf.labels,
+    aes(label = Farm.Redact, geometry = geometry),
+    stat = "sf_coordinates",
+    bg.r = 0.2,
+    bg.color = "white",
+    force = 0
+  ) +
   theme(plot.caption = element_text(vjust = 0)))
 
-ggsave("Figure_1.png", plot = fig.1, path = "figures",
-       dpi = 500, width = 4, height = 5)
+ggsave(
+  "Figure_1.png",
+  plot = fig.1,
+  path = "figures",
+  dpi = 500,
+  width = 4,
+  height = 5
+)
 ```
 
 #### Differences in limits between both UHPLC-MS/MS batches
 
 ```{r diffLim}
 difference <- function(vec) {
-  diff <-  max(vec) - min(vec)
+  diff <- max(vec) - min(vec)
   return(diff)
 }
 
 # Get just the compounds and limits
-df.limits <- data.H.Long %>% 
-  select(Cmpd, ends_with(".ppb")) %>% unique()
+df.limits <- data.H.Long %>%
+  select(Cmpd, ends_with(".ppb")) %>%
+  unique()
 
-df.limits %>% 
+df.limits %>%
   arrange(Cmpd) %>% # Sorts by compound. We see there's 2 limits for each compound.
-  group_by(Cmpd) %>%  # for each compound,
-    # Compute difference between limits
-    summarise(across(ends_with(".ppb"), list(diff = difference)), .groups = "drop") %>% 
+  group_by(Cmpd) %>% # for each compound,
+  # Compute difference between limits
+  summarise(
+    across(ends_with(".ppb"), list(diff = difference)),
+    .groups = "drop"
+  ) %>%
   # Now, for each limit, average differences across compounds and compute std. error.
-  summarise(across(ends_with("_diff"), list(mean = mean, SE = std_error))) %>% 
-  signif(digits = 2) %>% 
+  summarise(across(ends_with("_diff"), list(mean = mean, SE = std_error))) %>%
+  signif(digits = 2) %>%
   # Values are easier to read if listed vertically
-  transpose(keep.names = "Difference") %>% 
+  transpose(keep.names = "Difference") %>%
   rename("Value (ppb)" = V1)
 
 # Save most conservative limit (maximum) for reporting in output tables
-df.limits <- df.limits %>% 
-  group_by(Cmpd) %>% 
-    summarize(across(ends_with(".ppb"), ~max(.)))
+df.limits <- df.limits %>%
+  group_by(Cmpd) %>%
+  summarize(across(ends_with(".ppb"), ~ max(.)))
 ```
 
 #### Table S2. List of 96 pesticides screened in honey samples
 
 ```{r tab--S2}
 # Summary table by compound --------------------------------------------------------
-df.cmpdSumm <- data.H.Long %>% 
-  group_by(Cmpd, Class.Pest) %>% 
-    summarize(
+df.cmpdSumm <- data.H.Long %>%
+  group_by(Cmpd, Class.Pest) %>%
+  # fmt: skip
+  summarize(
       n.detect   = n_distinct(Sample.ID[ppb>0]),
       pct.detect = ifelse(n.detect > 0, n.detect / n_distinct(Sample.ID), NA),
       ppb.mean   = ifelse(n.detect > 0, mean(ppb),      NA),
       ppb.se     = ifelse(n.detect > 0, std_error(ppb), NA),
       ppb.min    = ifelse(n.detect > 0, min(ppb),       NA),
       ppb.max    = ifelse(n.detect > 0, max(ppb),       NA),
-      .groups    = "drop") %>% 
-  arrange(desc(pct.detect)) %>% 
+      .groups    = "drop") %>%
+  arrange(desc(pct.detect)) %>%
   # Convert to factor in current order. Useful for charts using this dataframe
-  mutate(Class.Pest = factor(Class.Pest, ordered = T, levels = styles.classLev)) %>% 
-  
+  mutate(
+    Class.Pest = factor(Class.Pest, ordered = T, levels = styles.classLev)
+  ) %>%
+
   # Add organic MRLS
   left_join(
-    meta.Tols %>% 
-      select(Cmpd, Tol.H.ppm) %>% 
+    meta.Tols %>%
+      select(Cmpd, Tol.H.ppm) %>%
       mutate(
-        Tol.OG.ppb = Tol.H.ppm * 0.05 * 1000,  # 5% of EPA, convert to ppb
+        Tol.OG.ppb = Tol.H.ppm * 0.05 * 1000, # 5% of EPA, convert to ppb
         # Cmpd       = factor(Cmpd, ordered = T, levels = rev(df.cmpdSumm$Cmpd)),
-        .keep      = "unused"),
-    by = "Cmpd") %>%
+        .keep = "unused"
+      ),
+    by = "Cmpd"
+  ) %>%
   # Any compound with an undefined tolerance is set at 10ppb
-  mutate(Tol.OG.ppb = ifelse(is.na(Tol.OG.ppb), 10, Tol.OG.ppb)) %>% 
+  mutate(Tol.OG.ppb = ifelse(is.na(Tol.OG.ppb), 10, Tol.OG.ppb)) %>%
 
   # Add LOD and LOQs to summary table
   left_join(df.limits %>% select(-ULOQ.ppb), by = "Cmpd")
 
 # Generate a nice clean table -------------------------------------------------------
-df.cmpdSumm %>% 
-  select(-n.detect) %>% 
-  relocate(pct.detect, LOD.ppb, LOQ.ppb, Tol.OG.ppb, .before = ppb.mean) %>% 
+df.cmpdSumm %>%
+  select(-n.detect) %>%
+  relocate(pct.detect, LOD.ppb, LOQ.ppb, Tol.OG.ppb, .before = ppb.mean) %>%
   # filter(ppb.mean > 0) %>%  # HIDE COMPOUNDS NOT DETECTED
   group_by(Class.Pest) %>%
-  arrange(Class.Pest, desc(pct.detect)) %>% 
+  arrange(Class.Pest, desc(pct.detect)) %>%
 
-  gt(rowname_col = "Cmpd") %>% 
-    tab_stubhead("Compound")  %>% 
-  
-    # Replace NAs with Not Detected
-    sub_missing(missing_text = "ND") %>% 
-    
-    fmt_number( columns = c(starts_with("ppb")), decimals = 3) %>% 
-    fmt_percent(columns = pct.detect,            decimals = 1) %>% 
-  
-    tab_spanner(label = "Amounts (ppb)", columns = 4:10) %>% 
-    cols_label(
+  gt(rowname_col = "Cmpd") %>%
+  tab_stubhead("Compound") %>%
+
+  # Replace NAs with Not Detected
+  sub_missing(missing_text = "ND") %>%
+
+  fmt_number(columns = c(starts_with("ppb")), decimals = 3) %>%
+  fmt_percent(columns = pct.detect, decimals = 1) %>%
+
+  tab_spanner(label = "Amounts (ppb)", columns = 4:10) %>%
+  # fmt: skip
+  cols_label(
       ppb.mean   = "Mean",      ppb.se     = "SE",
       ppb.min    = "Min",       ppb.max    = "Max",
       pct.detect = "% Samples", Tol.OG.ppb = "Organic MRL",
@@ -349,39 +425,60 @@ df.cmpdSumm %>%
 ```{r fig--2}
 # Prep data for plot ----------------------------------------------------------------
 df.none <- df.cmpdSumm %>% filter(n.detect == 0) %>% select(Cmpd)
-df.fig2.heat <- data.H.Long %>% 
+df.fig2.heat <- data.H.Long %>%
   # Remove compounds w/ no detections
-  anti_join(df.none, by = join_by(Cmpd)) %>% 
-  
+  anti_join(df.none, by = join_by(Cmpd)) %>%
+
   # Organic tolerances
   left_join(
     df.cmpdSumm %>% select(Cmpd, Tol.OG.ppb),
-    by = "Cmpd") %>%
-  
-  select(Colony.ID, Sample.ID, Apiary, Trt, Cmpd, Class.Pest, ppb, Tol.OG.ppb, 
-         Group, Brand) %>% 
-  
+    by = "Cmpd"
+  ) %>%
+
+  select(
+    Colony.ID,
+    Sample.ID,
+    Apiary,
+    Trt,
+    Cmpd,
+    Class.Pest,
+    ppb,
+    Tol.OG.ppb,
+    Group,
+    Brand
+  ) %>%
+
   # Threshold detections based on OG tolerances
   mutate(
     Exceed.Tol = ifelse(
-      ppb == 0, 
-      "No Detection",                         # 0 ppb, cmpd not detected. Otherwise,
-      ifelse(ppb > Tol.OG.ppb, "Yes", "No")), # check detection against tolerance
-    
-    Exceed.Tol = factor(Exceed.Tol, ordered = T, 
-                        levels = c("Yes", "No", "No Detection")),
-    
+      ppb == 0,
+      "No Detection", # 0 ppb, cmpd not detected. Otherwise,
+      ifelse(ppb > Tol.OG.ppb, "Yes", "No")
+    ), # check detection against tolerance
+
+    Exceed.Tol = factor(
+      Exceed.Tol,
+      ordered = T,
+      levels = c("Yes", "No", "No Detection")
+    ),
+
     # Set order of groups on plots
-    Group = factor(Group,ordered = T, levels = styles.groupOrd))
+    Group = factor(Group, ordered = T, levels = styles.groupOrd)
+  )
 
 # Build styles for plot -------------------------------------------------------------
 colors.heat <- c("grey42", color("lajolla")(49))
-colors.tols <- c("Yes" = color("lajolla")(3)[2], "No" = "grey80", "No Detection" = "grey40")
+colors.tols <- c(
+  "Yes" = color("lajolla")(3)[2],
+  "No" = "grey80",
+  "No Detection" = "grey40"
+)
 
 styles.heat <- list(
-  theme_classic(),  
-  
+  theme_classic(),
+
   # Remove things we don't need from theme
+  # fmt: skip
   theme(
     axis.ticks            = element_blank(),
     axis.text.x           = element_blank(),
@@ -393,30 +490,41 @@ styles.heat <- list(
     plot.caption.position = "plot",
     plot.caption          = element_text(hjust = 0, color = "grey40", 
                                          face = "italic")),
-  
+
   # Remove some odd spacing between panel border and plot. See:
   # https://stackoverflow.com/a/22945857
-  scale_x_discrete(expand = c(0, 0)), 
+  scale_x_discrete(expand = c(0, 0)),
   scale_y_discrete(expand = c(0, 0))
 )
 
-df.fig2.heat <- df.fig2.heat %>% 
+df.fig2.heat <- df.fig2.heat %>%
   mutate(Class.Pest = recode(Class.Pest, "Synergist" = "Syn."))
 
 # Plot overall exposure ------------------------------------------------------------
 (fig.2 <- ggplot(data = df.fig2.heat) +
   geom_tile(aes(x = Sample.ID, y = Cmpd, fill = ppb), alpha = 1) +
-  facet_grid(Class.Pest~Group, scales = "free", space = "free", 
-             labeller = labeller(Group = styles.group)) +
+  facet_grid(
+    Class.Pest ~ Group,
+    scales = "free",
+    space = "free",
+    labeller = labeller(Group = styles.group)
+  ) +
   scale_fill_gradientn(
-    name   = "Concentration\n(ppb)",  # Title of the scale
-    colors = colors.heat,             # The colors we defined earlier
-    trans  = "log1p") +               # Log(0) is infinite, so log(ppb+1)
+    name = "Concentration\n(ppb)", # Title of the scale
+    colors = colors.heat, # The colors we defined earlier
+    trans = "log1p"
+  ) + # Log(0) is infinite, so log(ppb+1)
   labs(caption = "Plus 80 more compounds not detected.") +
   styles.heat)
 
-ggsave("Figure_2.png", plot = fig.2, path = "figures", 
-       dpi = 500, width = 7, height = 5)
+ggsave(
+  "Figure_2.png",
+  plot = fig.2,
+  path = "figures",
+  dpi = 500,
+  width = 7,
+  height = 5
+)
 ```
 
 ### 3.1. How did pesticide contamination compare between sampled honeys?
@@ -425,75 +533,113 @@ ggsave("Figure_2.png", plot = fig.2, path = "figures",
 
 ```{r fig--3}
 # Prepare data ------------------------------------------------------------------
-df.figs <- data.H.Long %>% 
-  group_by(across(c(-Cmpd, -ends_with(".ppb"), 
-      -Class.Pest, -ppb))) %>% 
-    summarize(
-      # Count the number of compounds where ppb > 0
-      num.Cmpd = length(ppb[ppb > 0]), 
-      # Simply sum the total ppb
-      ppb.sum  = sum(ppb),
-      .groups = "drop") %>% 
-    mutate(Brand = as_factor(ifelse(
-      is.na(Brand), 
-      as.character(Apiary), 
-      as.character(Brand)))) %>% 
-  select(-Apiary) %>% 
-  mutate(Group = factor(Group,ordered = T, levels = styles.groupOrd))
+df.figs <- data.H.Long %>%
+  group_by(across(c(-Cmpd, -ends_with(".ppb"), -Class.Pest, -ppb))) %>%
+  summarize(
+    # Count the number of compounds where ppb > 0
+    num.Cmpd = length(ppb[ppb > 0]),
+    # Simply sum the total ppb
+    ppb.sum = sum(ppb),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Brand = as_factor(ifelse(
+      is.na(Brand),
+      as.character(Apiary),
+      as.character(Brand)
+    ))
+  ) %>%
+  select(-Apiary) %>%
+  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd))
 
 # Define plot styles ---------------------------------------------------------------
 styles.colors <- color("davos", reverse = T)(6)[2:5]
 
 styles.bar <- list(
-
   # See @link https://stackoverflow.com/a/65765891/5025767
-  geom_bar(stat = "summary", fun = "mean", 
-           position = position_dodge(0.9), width = 0.8,
-           color = "black", alpha = 1),
-  
-  # The height parameter should be low, so discrete values don't look continuous
-  geom_jitter(position=position_jitter(height = 0.01, width = 0.2),
-              alpha = 1, shape = 21, color = "black"),
-  
-  geom_errorbar(stat= "summary", fun.data = "mean_se", width = 0.1, linewidth=1.8, color="white"),
-  geom_errorbar(stat= "summary", fun.data = "mean_se", width = 0.1, linewidth=1),
+  geom_bar(
+    stat = "summary",
+    fun = "mean",
+    position = position_dodge(0.9),
+    width = 0.8,
+    color = "black",
+    alpha = 1
+  ),
 
-  scale_x_discrete(labels  = styles.group),
+  # The height parameter should be low, so discrete values don't look continuous
+  geom_jitter(
+    position = position_jitter(height = 0.01, width = 0.2),
+    alpha = 1,
+    shape = 21,
+    color = "black"
+  ),
+
+  geom_errorbar(
+    stat = "summary",
+    fun.data = "mean_se",
+    width = 0.1,
+    linewidth = 1.8,
+    color = "white"
+  ),
+  geom_errorbar(
+    stat = "summary",
+    fun.data = "mean_se",
+    width = 0.1,
+    linewidth = 1
+  ),
+
+  scale_x_discrete(labels = styles.group),
   scale_fill_manual(values = styles.colors),
-  
+
   # Define the chart theme
   theme_classic(),
-  theme(legend.position="none"))
+  theme(legend.position = "none")
+)
 
-styles.ylab.num    <- list(ylab("Number of residues"))
+styles.ylab.num <- list(ylab("Number of residues"))
 styles.ylab.sumPPB <- list(ylab("Total residue amounts (ppb)"))
-
 # Build plots -------------------------------------------------------------------
 df.fig3.signif <- tibble(
   Sample.Type = rep("Honey", 4),
-  Group       = c("OG-HI", "OG-IMP", "CNV", "OREI"),
+  Group = c("OG-HI", "OG-IMP", "CNV", "OREI"),
   Contrast.Nr = c("a", "a", "b", "a"),
-  y.Nr        = rep(7, 4),
+  y.Nr = rep(7, 4),
   Contrast.Amt = c("ab", "a", "b", "a"),
-  y.Amt        = rep(30, 4))
+  y.Amt = rep(30, 4)
+)
 
 (fig.3 <- ((ggplot(
-  data = df.figs, aes(x = Group, y = num.Cmpd, fill=Group)) +
-  styles.ylab.num + 
-  geom_text(data = df.fig3.signif,
-            aes(x = Group, y = y.Nr, label = Contrast.Nr))) /
-  
-(ggplot(
-  data = df.figs, aes(x = Group, y = ppb.sum, fill=Group)) +
-  styles.ylab.sumPPB + 
-  geom_text(data = df.fig3.signif,
-            aes(x = Group, y = y.Amt, label = Contrast.Amt))) +
-    
-  plot_annotation(tag_levels = 'A') & 
-  styles.bar & coord_trans(y = "log1p")))
+  data = df.figs,
+  aes(x = Group, y = num.Cmpd, fill = Group)
+) +
+  styles.ylab.num +
+  geom_text(
+    data = df.fig3.signif,
+    aes(x = Group, y = y.Nr, label = Contrast.Nr)
+  )) /
 
-ggsave("Figure_3.png", plot = fig.3, path = "figures", 
-       dpi = 500, width = 7, height = 5)
+  (ggplot(
+    data = df.figs,
+    aes(x = Group, y = ppb.sum, fill = Group)
+  ) +
+    styles.ylab.sumPPB +
+    geom_text(
+      data = df.fig3.signif,
+      aes(x = Group, y = y.Amt, label = Contrast.Amt)
+    )) +
+
+  plot_annotation(tag_levels = 'A') &
+  styles.bar &
+  coord_trans(y = "log1p")))
+
+ggsave(
+  "Figure_3.png",
+  plot = fig.3,
+  path = "figures",
+  dpi = 500,
+  width = 7,
+  height = 5
+)
 ```
 
 #### Table S3. Positive compound detections within each group of sampled honey
@@ -501,26 +647,28 @@ ggsave("Figure_3.png", plot = fig.3, path = "figures",
 ```{r tab--S3}
 df.fig2.heat %>%
   group_by(Cmpd, Class.Pest, Group) %>%
+  # fmt: skip
   summarize(
-    n.detects  = length(Cmpd[ppb > 0]),
-    pct.detect = n.detects / n_distinct(Sample.ID),
-    mean       = mean(ppb),
-    se         = std_error(ppb),
-    max        = max(ppb),
-    Tol.OG.ppb = first(Tol.OG.ppb),
+    n.detects   = length(Cmpd[ppb > 0]),
+    pct.detect  = n.detects / n_distinct(Sample.ID),
+    mean        = mean(ppb),
+    se          = std_error(ppb),
+    max         = max(ppb),
+    Tol.OG.ppb  = first(Tol.OG.ppb),
     n.exceedTol = length(Cmpd[ppb >= Tol.OG.ppb]),
-    .groups    = "drop"
+    .groups = "drop"
   ) %>%
   arrange(Group, desc(n.detects)) %>%
   relocate(Tol.OG.ppb, n.exceedTol, .after = Class.Pest) %>%
   filter(n.detects > 0) %>%
   group_by(Group) %>%
   mutate(Group = recode(Group, !!!styles.group)) %>%
-  
+
   gt(rowname_col = "Cmpd") %>%
   tab_stubhead("Compound") %>%
   fmt_percent(columns = 7, decimals = 1) %>%
   fmt_number(columns = 8:10, decimals = 2) %>%
+  # fmt: skip
   cols_label(
     Class.Pest  = "Class",
     n.detects   = "n",
@@ -549,7 +697,7 @@ df.fig4.NMDS <- data.H.Wide %>%
   column_to_rownames('Sample.ID') %>%
   select(-c(Colony.ID:Trt)) %>%
   filter(!if_all(everything(.), ~ . == 0)) %>% # Remove samples w/ no detections.
-  select(-one_of(df.none %>% pull()))          # Removes compounds w/ no detections
+  select(-one_of(df.none %>% pull())) # Removes compounds w/ no detections
 
 # Indicator Species Analysis -------------------------------------------------------
 # See @link https://uw.pressbooks.pub/appliedmultivariatestatistics/chapter/isa/
@@ -557,8 +705,10 @@ df.fig4.NMDS <- data.H.Wide %>%
 # =(1)= Create clustering vector.
 # Length of cluster vector MUST equal number of rows in df.fig4.NMDS
 stat.ISA.grp <- meta.Ord %>%
-  inner_join(df.fig4.NMDS %>% rownames_to_column("Sample.ID"),
-             by = join_by(Sample.ID)) %>%
+  inner_join(
+    df.fig4.NMDS %>% rownames_to_column("Sample.ID"),
+    by = join_by(Sample.ID)
+  ) %>%
   pull(Groups, Sample.ID)
 
 # =(2)= Run the ISA.
@@ -568,36 +718,47 @@ stat.ISA <- multipatt(x = df.fig4.NMDS, cluster = stat.ISA.grp)
 # =(3)= Extract indicator species/compounds from the ISA
 stat.ISA.tab <- stat.ISA$sign %>%
   select(-index) %>%
-  
+
   # If compound is an indicator, replace value in table with group it indicates
-  mutate(across(starts_with("s."), ~ ifelse(. == 1, gsub(
-    "s.", "", cur_column()
-  ), NA))) %>%
-  
+  mutate(across(
+    starts_with("s."),
+    ~ ifelse(
+      . == 1,
+      gsub(
+        "s.",
+        "",
+        cur_column()
+      ),
+      NA
+    )
+  )) %>%
+
   # Combine indicator groups into a single string, matching format from summary()
   unite(Groups, starts_with("s."), sep = "+", na.rm = T) %>%
   rownames_to_column("Cmpd") %>%
-  
+
   # Only use significant compounds going forward
   filter(p.value <= 0.05) %>%
-  
+
   # Lookup A & B values from ISA output
   rowwise() %>%
   mutate(
-    A = as.data.frame(stat.ISA$A)[Cmpd, Groups], 
-    B = as.data.frame(stat.ISA$B)[Cmpd, Groups]) %>%
+    A = as.data.frame(stat.ISA$A)[Cmpd, Groups],
+    B = as.data.frame(stat.ISA$B)[Cmpd, Groups]
+  ) %>%
   ungroup() %>%
-  relocate(c(A, B), .before = stat) %>% 
-  
+  relocate(c(A, B), .before = stat) %>%
+
   # Format for display
-  arrange(desc(stat)) %>% group_by(Groups)
+  arrange(desc(stat)) %>%
+  group_by(Groups)
 
 # Run NMDS --------------------------------------------------------------------------
 MDS.path <- "cache/nmds-result.rds"
 
 if (!file.exists(MDS.path)) {
   # If the NMDS result does NOT exist, make it!
-  set.seed(42)               # Ensures reproducibility
+  set.seed(42) # Ensures reproducibility
   stat.MDS <- metaMDS(
     comm = df.fig4.NMDS,
     autotransform = F,
@@ -617,21 +778,19 @@ if (!file.exists(MDS.path)) {
   stat.MDS <- readRDS(file = MDS.path)
 }
 
-stat.ISA.indic <- stat.ISA.tab %>%   # Group col must be a factor to plot correctly
+stat.ISA.indic <- stat.ISA.tab %>% # Group col must be a factor to plot correctly
   mutate(Groups = factor(Groups, levels = levels(stat.ISA.grp))) %>%
   select(Cmpd, Groups)
 
 source("functions/plot_NMDS.R")
 
-(
-  fig.4 <- plot_NMDS(
-    MDS = stat.MDS,
-    grp = stat.ISA.grp,
-    indic = stat.ISA.indic,
-    labs = styles.group,
-    colors = lighten(styles.colors, 0.2)
-  )[[1]]
-)
+(fig.4 <- plot_NMDS(
+  MDS = stat.MDS,
+  grp = stat.ISA.grp,
+  indic = stat.ISA.indic,
+  labs = styles.group,
+  colors = lighten(styles.colors, 0.2)
+)[[1]])
 
 ggsave(
   "Figure_4.png",
@@ -668,9 +827,7 @@ pairwise.adonis(df.fig4.NMDS, factors = stat.ISA.grp) %>%
 # stat.ISA.summary <- summary(stat.ISA, indvalcomp = T)
 gt(stat.ISA.tab) %>%
   fmt_number(decimals = 3) %>%
-  cols_label(Cmpd = "Compound",
-             stat = "IV",
-             p.value = "p")
+  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p")
 ```
 
 ### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
@@ -682,17 +839,19 @@ gt(stat.ISA.tab) %>%
 df.fig5A.MRLHeat <- df.fig2.heat %>%
   group_by(Cmpd) %>%
   filter(any(Exceed.Tol == "Yes")) %>%
-  mutate(Cmpd = case_match(Cmpd, "Piperonyl butoxide"  ~ "PBO", .default = Cmpd))
+  mutate(Cmpd = case_match(Cmpd, "Piperonyl butoxide" ~ "PBO", .default = Cmpd))
 
 df.fig5B.MRL <- df.fig2.heat %>%
   group_by(Sample.ID, Group) %>%
-  summarize(Sample.Exceed = ifelse(any(Exceed.Tol == "Yes"), "Yes", "No"),
-            .groups = "drop")
+  summarize(
+    Sample.Exceed = ifelse(any(Exceed.Tol == "Yes"), "Yes", "No"),
+    .groups = "drop"
+  )
 
 df.fig5B.signif <- tibble(
-  Group        = c("OG-HI", "OG-IMP", "CNV", "OREI"),
+  Group = c("OG-HI", "OG-IMP", "CNV", "OREI"),
   Contrast.MRL = c("b", "ab", "b", "a"),
-  y.MRL        = rep(0.9, 4)
+  y.MRL = rep(0.9, 4)
 )
 
 # Fig 5A: Heatmap showing samples above tolerance --------------------------------
@@ -706,26 +865,23 @@ fig.5A <- ggplot(df.fig5A.MRLHeat) +
   ) +
   scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
   styles.heat +
-  theme(legend.position = "left",
-        plot.caption.position = "panel") +
+  theme(legend.position = "left", plot.caption.position = "panel") +
   labs(caption = "Plus 93 more compounds not exceeding MRLs.")
 
 # Fig 5B: Plot w/ proportion of samples above MRL ---------------------------------
 fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
   geom_bar(position = "fill") +
-  scale_x_discrete(labels  = styles.group) +
+  scale_x_discrete(labels = styles.group) +
   scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
   ylab("\nProp. of samples >MRL\n") +
   theme_classic() +
   theme(legend.position = "none")
 
 # Assemble combined figure
-(
-  fig.5 <- (fig.5A) /
-    free(fig.5B) +
-    plot_layout(heights = c(2, 3)) +
-    plot_annotation(tag_levels = 'A')
-)
+(fig.5 <- (fig.5A) /
+  free(fig.5B) +
+  plot_layout(heights = c(2, 3)) +
+  plot_annotation(tag_levels = 'A'))
 
 ggsave(
   "Figure_5.png",
@@ -740,19 +896,17 @@ ggsave(
 #### Figure 5B for visual abstract 
 
 ```{r fig--5b-abstract, fig.height=1.5, fig.width=3.75, message=FALSE}
-(
-  fig5B.abs <- fig.5B +
-    scale_x_discrete(
-      labels  = c(
-        "OREI" = "N.E. USA",
-        "OG-HI" = "Hawaii",
-        "OG-IMP" = "Organic",
-        "CNV" = "Conventional"
-      )
-    ) +
-    ylab("p(>MRL)")  +
-    theme(axis.title.x = element_blank())
-)
+(fig5B.abs <- fig.5B +
+  scale_x_discrete(
+    labels = c(
+      "OREI" = "N.E. USA",
+      "OG-HI" = "Hawaii",
+      "OG-IMP" = "Organic",
+      "CNV" = "Conventional"
+    )
+  ) +
+  ylab("p(>MRL)") +
+  theme(axis.title.x = element_blank()))
 
 ggsave(
   "Abstract_Fig5B.png",
@@ -775,20 +929,33 @@ Here, I use the [`CropScapeR`](https://github.com/cbw1243/CropScapeR) package to
 path.CDL <- "cache/cdl-cropscape-out.csv"
 
 # If the downloaded CDL data does NOT exist, create it! If it DOES exist, load it!
-if(!file.exists(path.CDL)) {
-
+if (!file.exists(path.CDL)) {
   source("functions/get_apiary_CDL.R")
 
-  CDL.OREI.1km <- get_apiary_CDL(meta.farms, gc_rad=1,   gc_yr=2024, gc_dTol=40)
-  CDL.OREI.3km <- get_apiary_CDL(meta.farms, gc_rad=3,   gc_yr=2024, gc_dTol=75)
-  CDL.OREI.6km <- get_apiary_CDL(meta.farms, gc_rad=6.4, gc_yr=2024, gc_dTol=140)
+  CDL.OREI.1km <- get_apiary_CDL(
+    meta.farms,
+    gc_rad = 1,
+    gc_yr = 2024,
+    gc_dTol = 40
+  )
+  CDL.OREI.3km <- get_apiary_CDL(
+    meta.farms,
+    gc_rad = 3,
+    gc_yr = 2024,
+    gc_dTol = 75
+  )
+  CDL.OREI.6km <- get_apiary_CDL(
+    meta.farms,
+    gc_rad = 6.4,
+    gc_yr = 2024,
+    gc_dTol = 140
+  )
 
   data.CDL <- bind_rows(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
-  
-  rm(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
-  
-  write_csv(CDL, path.CDL)
 
+  rm(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
+
+  write_csv(CDL, path.CDL)
 } else {
   data.CDL <- read_csv(path.CDL, col_types = "ffffd")
 }
@@ -801,7 +968,10 @@ rm(path.CDL)
 #   write_csv("cdl-crops.csv")
 
 # Read the classified crops
-meta.cropHab <- read_csv("data/metadata/cdl-crops-classified.csv", col_types = "ff")
+meta.cropHab <- read_csv(
+  "data/metadata/cdl-crops-classified.csv",
+  col_types = "ff"
+)
 
 # = (3) Create a dataframe combining contamination + landscape data =================
 df.landscape <- left_join(
@@ -810,29 +980,29 @@ df.landscape <- left_join(
     filter(Group == "OREI") %>%
     group_by(Apiary, Trt, Colony.ID) %>%
     summarise(
-      ppb.sum  = sum(ppb),
+      ppb.sum = sum(ppb),
       num.Cmpd = length(ppb[ppb > 0]),
-      .groups  = "drop"
+      .groups = "drop"
     ),
-  
+
   # with the classified habitat dataframe
   data.CDL %>%
     left_join(meta.cropHab, by = "Crop") %>%
     group_by(Apiary, Year, Rad.km, Habitat) %>%
     summarize(Pct.Habitat = sum(Pct), .groups = "drop"),
-  
+
   by = join_by(Apiary),
   relationship = "many-to-many"
-) %>% 
-  
+) %>%
+
   # Wider format
   pivot_wider(
     names_from = Habitat,
     values_from = Pct.Habitat,
     names_prefix = "Pct.",
     values_fill = 0
-  ) %>% 
-  
+  ) %>%
+
   pivot_wider(
     names_from = Rad.km,
     values_from = starts_with("Pct."),
@@ -841,7 +1011,8 @@ df.landscape <- left_join(
 
 # = (4) Summary table ==============================================================
 df.landscape %>%
-  select(Apiary, ends_with("_3km")) %>% unique() %>%
+  select(Apiary, ends_with("_3km")) %>%
+  unique() %>%
   left_join(select(meta.farms, Apiary, Farm.Redact), by = join_by(Apiary)) %>%
   select(-Apiary) %>%
   relocate(Farm.Redact, .before = everything()) %>%
@@ -849,6 +1020,7 @@ df.landscape %>%
   gt() %>%
   fmt_number(decimals = 2) %>%
   tab_spanner(label = "Percent Habitat", columns = 3:5) %>%
+  # fmt: skip
   cols_label(
     Farm.Redact  = "Apiary",
     Pct.Ag_3km   = "Ag",
@@ -856,37 +1028,37 @@ df.landscape %>%
     Pct.Dev_3km  = "Dev",
     Pct.Nat_3km  = "Nat"
   )
-  
 ```
 
 #### Table S7. Summary of GLMMs used to examine the relationship between landscape composition and pesticide contamination in New York and Pennsylvania honey
 
 ```{r tab--S7, message=FALSE}
+# fmt: skip
 m.land.sum     <- glmmTMB(ppb.sum ~ Pct.Ag_1km + Pct.Ag_3km + Pct.Ag_6.4km + 
                           Pct.Semi_1km + Pct.Semi_3km + Pct.Semi_6.4km + Pct.Dev_1km + 
                           Pct.Dev_3km + Pct.Dev_6.4km + (1|Apiary), 
                           data   = df.landscape,
                           family = "tweedie",
                           na.action = "na.fail")
-
+# fmt: skip
 m.land.sumNULL <- glmmTMB(ppb.sum ~ (1|Apiary), 
                           data   = df.landscape,
                           family = "tweedie",
                           na.action = "na.fail")
-
+# fmt: skip
 m.land.num     <- glmmTMB(num.Cmpd ~ Pct.Ag_1km + Pct.Ag_3km + Pct.Ag_6.4km + 
                           Pct.Semi_1km + Pct.Semi_3km + Pct.Semi_6.4km + Pct.Dev_1km + 
                           Pct.Dev_3km + Pct.Dev_6.4km + (1|Apiary), 
                           data   = df.landscape,
                           family = "poisson",
                           na.action = "na.fail")
-
+# fmt: skip
 m.land.numNULL <- glmmTMB(num.Cmpd ~ (1|Apiary), 
                           data   = df.landscape,
                           family = "poisson",
                           na.action = "na.fail")
 
-# Function implements dredge() with custom outputs: 
+# Function implements dredge() with custom outputs:
 # R^2 and results from a likelihood ratio test
 # It also saves results in a table for publication
 do_dredge <- function(model, nModel) {
@@ -894,80 +1066,85 @@ do_dredge <- function(model, nModel) {
     model,
     m.lim = c(0, 1),
     extra = list(
-      "Rsq" = function(x)
-        r.squaredLR(x, nModel),
+      # fmt: skip
+      "Rsq" = function(x) r.squaredLR(x, nModel),
       "LRtest" = function(x) {
         anova <- anova(x, nModel)
         c(
           "Chisq" = anova$Chisq[2],
-          "df"    = anova$`Chi Df`[2],
-          "p"     = anova$`Pr(>Chisq)`[2]
+          "df" = anova$`Chi Df`[2],
+          "p" = anova$`Pr(>Chisq)`[2]
         )
       },
-      "model.rel" = function(x)
+      "model.rel" = function(x) {
         fixef(x)$cond[2] %>% unname() %>% sign()
+      }
     )
   )
-  
+
   tab <- out %>%
     # I'll convert the wide output from dredge() and list the predictor(s) in a column
     # First, column names need to be clean
-    rename_with( ~ make.names(.) %>% str_remove("\\.$")) %>%
+    rename_with(~ make.names(.) %>% str_remove("\\.$")) %>%
     select(-cond..Int., -disp..Int.) %>%
     # If we have a numeric value for the predictor, replace value with the predictor
-    mutate(across(starts_with("cond."), ~ ifelse(
-      !is.na(.), gsub("cond.", "", cur_column()), NA
-    ))) %>%
+    mutate(across(
+      starts_with("cond."),
+      ~ ifelse(
+        !is.na(.),
+        gsub("cond.", "", cur_column()),
+        NA
+      )
+    )) %>%
     # Combine predictor names into single column
-    unite(Predictor,
-          starts_with("cond."),
-          sep = " + ",
-          na.rm = T) %>%
+    unite(Predictor, starts_with("cond."), sep = " + ", na.rm = T) %>%
     # Remove null model and row names
     mutate(Predictor = ifelse(Predictor == "", "Null model", Predictor)) %>%
     remove_rownames()
-  
+
   return(list(table = tab, models = out))
 }
 
 df.land.dredge <- bind_rows(
-  do_dredge(m.land.sum, m.land.sumNULL)$table %>% 
+  do_dredge(m.land.sum, m.land.sumNULL)$table %>%
     mutate(Response = "Sum", .before = Predictor),
-  
-  do_dredge(m.land.num, m.land.numNULL)$table %>% 
+
+  do_dredge(m.land.num, m.land.numNULL)$table %>%
     mutate(Response = "Num", .before = Predictor)
 )
 
-df.land.dredge %>% 
-  select(Response, Predictor, model.rel, starts_with("LRtest"), AICc, delta) %>% 
-  
+df.land.dredge %>%
+  select(Response, Predictor, model.rel, starts_with("LRtest"), AICc, delta) %>%
+
   # Format data within table
   separate_wider_delim(
     Predictor,
     delim = "_",
     names = c("Habitat", "Radius"),
     too_few = "align_start"
-  ) %>% 
-  
+  ) %>%
+
   mutate(
     Response = case_match(
       Response,
       "Sum" ~ "Additive amount of residues",
-      "Num" ~ "Number of compounds per sample"),
+      "Num" ~ "Number of compounds per sample"
+    ),
     Habitat = case_match(
       Habitat,
-      "Pct.Semi"  ~ "Seminatural",
+      "Pct.Semi" ~ "Seminatural",
       "Pct.Dev" ~ "Developed",
       "Pct.Ag" ~ "Agricultural",
       .default = Habitat
     ),
     model.rel = as.character(model.rel),
     model.rel = case_match(
-      model.rel, 
-      "1" ~ "Positive", 
-      "-1" ~ "Negative", 
-      .default = model.rel)
-  ) %>% 
+      model.rel,
+      "1" ~ "Positive",
+      "-1" ~ "Negative",
+      .default = model.rel
+    )
+  ) %>%
   gt(groupname_col = "Response") %>%
   tab_options(row_group.as_column = T) %>%
   tab_stubhead("Response") %>%
@@ -982,7 +1159,7 @@ df.land.dredge %>%
   ) %>%
   fmt_number(columns = c(5, 7:9), decimals = 3) %>%
   tab_style(
-    style     = list(cell_text(weight = "bold")),
+    style = list(cell_text(weight = "bold")),
     locations = cells_body(columns = LRtest.p, rows = LRtest.p <= 0.05)
   )
 ```
