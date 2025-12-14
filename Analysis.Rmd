@@ -35,7 +35,7 @@ source("functions/std_error.R") # Standard error calc
 
 ### Importing and cleaning data
 
-First, we import some basic metadata on the honey samples, pesticides, USDA organic tolerances, and experimental colonies.
+First, I import some basic metadata on the honey samples, pesticides, USDA organic tolerances, and experimental colonies.
 
 ```{r importMetaData, message=FALSE}
 # Import metadata
@@ -412,7 +412,8 @@ df.cmpdSumm %>%
       ppb.mean   = "Mean",      ppb.se     = "SE",
       ppb.min    = "Min",       ppb.max    = "Max",
       pct.detect = "% Samples", Tol.OG.ppb = "Organic MRL",
-      LOD.ppb    = "LOD",       LOQ.ppb    = "LOQ")
+      LOD.ppb    = "LOD",       LOQ.ppb    = "LOQ") %>% 
+  tab_options(table.align = "left")
     
 ```
 
@@ -420,10 +421,11 @@ df.cmpdSumm %>%
 
 ### 3.0. Contamination summary
 
-#### Figure 2. Heatmap showing overall pesticide residue content of the sampled honeys
+#### Summary table of exposure (not in text)
 
-```{r fig--2}
-# Prep data for plot ----------------------------------------------------------------
+```{r tab--contSummary}
+# =(1) Prep data: we need the formatted data from figs. 2 & 3 for the following table
+# ===================================================================================
 df.none <- df.cmpdSumm %>% filter(n.detect == 0) %>% select(Cmpd)
 df.fig2.heat <- data.H.Long %>%
   # Remove compounds w/ no detections
@@ -466,6 +468,94 @@ df.fig2.heat <- data.H.Long %>%
     Group = factor(Group, ordered = T, levels = styles.groupOrd)
   )
 
+df.fig3.summ <- data.H.Long %>%
+  group_by(across(c(-Cmpd, -ends_with(".ppb"), -Class.Pest, -ppb))) %>%
+  summarize(
+    # Count the number of compounds where ppb > 0
+    num.Cmpd = length(ppb[ppb > 0]),
+    # Simply sum the total ppb
+    ppb.sum = sum(ppb),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Brand = as_factor(ifelse(
+      is.na(Brand),
+      as.character(Apiary),
+      as.character(Brand)
+    ))
+  ) %>%
+  select(-Apiary) %>%
+  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd))
+
+# =(2) Generate a summary table for reporting results ===============================
+summTab <- function(x) {
+  summarize(
+    x,
+    sum.mean = mean(ppb.sum),
+    sum.se = std_error(ppb.sum),
+    sum.min = min(ppb.sum),
+    sum.max = max(ppb.sum),
+    N.mean = mean(num.Cmpd),
+    N.se = std_error(num.Cmpd),
+    N.min = min(num.Cmpd),
+    N.max = max(num.Cmpd)
+  )
+}
+
+bind_rows(
+  df.fig3.summ %>%
+    group_by(Group) %>% # Dataframe summarizing detections by group
+    summTab,
+
+  df.fig3.summ %>%
+    ungroup() %>% # Dataframe that summarizes across all data
+    summTab %>%
+    mutate(Group = "All")
+) %>%
+
+  left_join(
+    # Number of compounds detected
+    bind_rows(
+      df.fig2.heat %>%
+        group_by(Group) %>% # In each group
+        summarize(Cmpds = n_distinct(Cmpd[ppb > 0])),
+
+      # All groups
+      data.frame(
+        Group = "All",
+        Cmpds = df.fig2.heat %>% pull(Cmpd) %>% unique() %>% length()
+      )
+    ),
+    by = join_by(Group)
+  ) %>%
+  relocate(Cmpds, .after = Group) %>%
+
+  gt() %>%
+  tab_spanner(label = "Summed amount/sample (ppb)", columns = 3:6) %>%
+  tab_spanner(label = "Number of compounds/sample", columns = 7:10) %>%
+  fmt_number(
+    columns = starts_with("sum."),
+    decimals = 2,
+    drop_trailing_zeros = T
+  ) %>%
+  fmt_number(
+    columns = starts_with("N."),
+    decimals = 1,
+    drop_trailing_zeros = T
+  ) %>%
+  cols_label(
+    Cmpds ~ "Number compounds detected",
+    ends_with("mean") ~ "Mean",
+    ends_with("se") ~ "SE",
+    ends_with("min") ~ "Min.",
+    ends_with("Max") ~ "Max."
+  ) %>% 
+  tab_options(table.align = "left")
+```
+
+#### Figure 2. Heatmap showing overall pesticide residue content of the sampled honeys
+
+```{r fig--2}
 # Build styles for plot -------------------------------------------------------------
 colors.heat <- c("grey42", color("lajolla")(49))
 colors.tols <- c(
@@ -529,29 +619,54 @@ ggsave(
 
 ### 3.1. How did pesticide contamination compare between sampled honeys?
 
+#### Stats for figure 3: Comparing contamination across groups of honey
+
+First, I use the number of compounds per sample as the response variable.
+
+```{r stats--fig3A}
+# Number of residues vs. Group -----------------------------------------------------
+m.fig3A <- glmmTMB(
+  num.Cmpd ~ Group + (1 | Brand),
+  data = df.fig3.summ,
+  family = "poisson"
+)
+
+# summary(m.fig3A)
+# check_overdispersion(m.fig3A)
+
+m.fig3ANULL <- glmmTMB(
+  num.Cmpd ~ (1 | Brand),
+  data = df.fig3.summ,
+  family = "poisson"
+)
+
+anova(m.fig3A, m.fig3ANULL)
+emmeans(m.fig3A, pairwise ~ Group, type = "response") # back-transforms means
+```
+
+Then I look at the total amount of residues in each sample as the response variable.
+
+```{r stats--fig3B}
+# Amount of residues vs. group ------------------------------------------------------
+m.fig3B <- glmmTMB(
+  ppb.sum ~ Group + (1 | Brand),
+  data = df.fig3.summ,
+  family = "tweedie"
+)
+
+m.fig3BNULL <- glmmTMB(
+  ppb.sum ~ (1 | Brand),
+  data = df.fig3.summ,
+  family = "tweedie"
+)
+
+anova(m.fig3B, m.fig3BNULL)
+emmeans(m.fig3B, pairwise ~ Group, type = "response") # back-transforms means
+```
+
 #### Figure 3. Comparison of the number of pesticide residues in sampled honey and the summed amount of residues per sample
 
 ```{r fig--3}
-# Prepare data ------------------------------------------------------------------
-df.figs <- data.H.Long %>%
-  group_by(across(c(-Cmpd, -ends_with(".ppb"), -Class.Pest, -ppb))) %>%
-  summarize(
-    # Count the number of compounds where ppb > 0
-    num.Cmpd = length(ppb[ppb > 0]),
-    # Simply sum the total ppb
-    ppb.sum = sum(ppb),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    Brand = as_factor(ifelse(
-      is.na(Brand),
-      as.character(Apiary),
-      as.character(Brand)
-    ))
-  ) %>%
-  select(-Apiary) %>%
-  mutate(Group = factor(Group, ordered = T, levels = styles.groupOrd))
-
 # Define plot styles ---------------------------------------------------------------
 styles.colors <- color("davos", reverse = T)(6)[2:5]
 
@@ -599,17 +714,18 @@ styles.bar <- list(
 styles.ylab.num <- list(ylab("Number of residues"))
 styles.ylab.sumPPB <- list(ylab("Total residue amounts (ppb)"))
 # Build plots -------------------------------------------------------------------
+# fmt: skip
 df.fig3.signif <- tibble(
-  Sample.Type = rep("Honey", 4),
-  Group = c("OG-HI", "OG-IMP", "CNV", "OREI"),
-  Contrast.Nr = c("a", "a", "b", "a"),
-  y.Nr = rep(7, 4),
+  Sample.Type  = rep("Honey", 4),
+  Group        = c("OG-HI", "OG-IMP", "CNV", "OREI"),
+  Contrast.Nr  = c("a", "a", "b", "a"),
+  y.Nr         = rep(7, 4),
   Contrast.Amt = c("ab", "a", "b", "a"),
-  y.Amt = rep(30, 4)
+  y.Amt        = rep(30, 4)
 )
 
 (fig.3 <- ((ggplot(
-  data = df.figs,
+  data = df.fig3.summ,
   aes(x = Group, y = num.Cmpd, fill = Group)
 ) +
   styles.ylab.num +
@@ -619,7 +735,7 @@ df.fig3.signif <- tibble(
   )) /
 
   (ggplot(
-    data = df.figs,
+    data = df.fig3.summ,
     aes(x = Group, y = ppb.sum, fill = Group)
   ) +
     styles.ylab.sumPPB +
@@ -680,7 +796,8 @@ df.fig2.heat %>%
     n.exceedTol = "n > MRL"
   ) %>%
   tab_spanner(label = "Detections", columns = 4:7) %>%
-  tab_spanner(label = "Amounts (ppb)", columns = 8:10)
+  tab_spanner(label = "Amounts (ppb)", columns = 8:10) %>% 
+  tab_options(table.align = "left")
 ```
 
 #### Figure 4. Non-metric multidimensional scaling (NMDS) ordination plot showing differences in contamination profiles between groups of honey.
@@ -817,7 +934,8 @@ pairwise.adonis(df.fig4.NMDS, factors = stat.ISA.grp) %>%
     F.Model = "F model",
     R2 = html("R<sup>2</sup>"),
     p.adjusted = "P adjusted"
-  )
+  ) %>% 
+  tab_options(table.align = "left")
 ```
 
 #### Table S5. Result of indicator species analysis (ISA) describing the degree of association between groups of wax samples. 
@@ -827,7 +945,8 @@ pairwise.adonis(df.fig4.NMDS, factors = stat.ISA.grp) %>%
 # stat.ISA.summary <- summary(stat.ISA, indvalcomp = T)
 gt(stat.ISA.tab) %>%
   fmt_number(decimals = 3) %>%
-  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p")
+  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p") %>% 
+  tab_options(table.align = "left")
 ```
 
 ### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
@@ -896,7 +1015,7 @@ ggsave(
 #### Figure 5B for visual abstract 
 
 ```{r fig--5b-abstract, fig.height=1.5, fig.width=3.75, message=FALSE}
-(fig5B.abs <- fig.5B +
+(fig.5B.abs <- fig.5B +
   scale_x_discrete(
     labels = c(
       "OREI" = "N.E. USA",
@@ -910,7 +1029,7 @@ ggsave(
 
 ggsave(
   "Abstract_Fig5B.png",
-  plot = fig5B.abs,
+  plot = fig.5B.abs,
   path = "figures",
   dpi = 500,
   width = 3.75,
@@ -1027,7 +1146,8 @@ df.landscape %>%
     Pct.Semi_3km = "Semi",
     Pct.Dev_3km  = "Dev",
     Pct.Nat_3km  = "Nat"
-  )
+  ) %>% 
+  tab_options(table.align = "left")
 ```
 
 #### Table S7. Summary of GLMMs used to examine the relationship between landscape composition and pesticide contamination in New York and Pennsylvania honey
@@ -1146,7 +1266,7 @@ df.land.dredge %>%
     )
   ) %>%
   gt(groupname_col = "Response") %>%
-  tab_options(row_group.as_column = T) %>%
+  tab_options(row_group.as_column = T, table.align = "left") %>%
   tab_stubhead("Response") %>%
   tab_spanner(label = "Predictor", columns = 2:3) %>%
   cols_label(
