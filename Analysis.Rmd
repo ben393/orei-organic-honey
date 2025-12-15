@@ -375,16 +375,16 @@ df.cmpdSumm <- data.H.Long %>%
   # Add organic MRLS
   left_join(
     meta.Tols %>%
-      select(Cmpd, Tol.H.ppm) %>%
+      select(Cmpd, MRL.H.ppm) %>%
       mutate(
-        Tol.OG.ppb = Tol.H.ppm * 0.05 * 1000, # 5% of EPA, convert to ppb
+        MRL.OG.ppb = MRL.H.ppm * 0.05 * 1000, # 5% of EPA, convert to ppb
         # Cmpd       = factor(Cmpd, ordered = T, levels = rev(df.cmpdSumm$Cmpd)),
         .keep = "unused"
       ),
     by = "Cmpd"
   ) %>%
   # Any compound with an undefined tolerance is set at 10ppb
-  mutate(Tol.OG.ppb = ifelse(is.na(Tol.OG.ppb), 10, Tol.OG.ppb)) %>%
+  mutate(MRL.OG.ppb = ifelse(is.na(MRL.OG.ppb), 10, MRL.OG.ppb)) %>%
 
   # Add LOD and LOQs to summary table
   left_join(df.limits %>% select(-ULOQ.ppb), by = "Cmpd")
@@ -392,7 +392,7 @@ df.cmpdSumm <- data.H.Long %>%
 # Generate a nice clean table -------------------------------------------------------
 df.cmpdSumm %>%
   select(-n.detect) %>%
-  relocate(pct.detect, LOD.ppb, LOQ.ppb, Tol.OG.ppb, .before = ppb.mean) %>%
+  relocate(pct.detect, LOD.ppb, LOQ.ppb, MRL.OG.ppb, .before = ppb.mean) %>%
   # filter(ppb.mean > 0) %>%  # HIDE COMPOUNDS NOT DETECTED
   group_by(Class.Pest) %>%
   arrange(Class.Pest, desc(pct.detect)) %>%
@@ -411,7 +411,7 @@ df.cmpdSumm %>%
   cols_label(
       ppb.mean   = "Mean",      ppb.se     = "SE",
       ppb.min    = "Min",       ppb.max    = "Max",
-      pct.detect = "% Samples", Tol.OG.ppb = "Organic MRL",
+      pct.detect = "% Samples", MRL.OG.ppb = "Organic MRL",
       LOD.ppb    = "LOD",       LOQ.ppb    = "LOQ") %>% 
   tab_options(table.align = "left")
     
@@ -433,7 +433,7 @@ df.fig2.heat <- data.H.Long %>%
 
   # Organic tolerances
   left_join(
-    df.cmpdSumm %>% select(Cmpd, Tol.OG.ppb),
+    df.cmpdSumm %>% select(Cmpd, MRL.OG.ppb),
     by = "Cmpd"
   ) %>%
 
@@ -445,7 +445,7 @@ df.fig2.heat <- data.H.Long %>%
     Cmpd,
     Class.Pest,
     ppb,
-    Tol.OG.ppb,
+    MRL.OG.ppb,
     Group,
     Brand
   ) %>%
@@ -455,7 +455,7 @@ df.fig2.heat <- data.H.Long %>%
     Exceed.Tol = ifelse(
       ppb == 0,
       "No Detection", # 0 ppb, cmpd not detected. Otherwise,
-      ifelse(ppb > Tol.OG.ppb, "Yes", "No")
+      ifelse(ppb > MRL.OG.ppb, "Yes", "No")
     ), # check detection against tolerance
 
     Exceed.Tol = factor(
@@ -770,12 +770,12 @@ df.fig2.heat %>%
     mean        = mean(ppb),
     se          = std_error(ppb),
     max         = max(ppb),
-    Tol.OG.ppb  = first(Tol.OG.ppb),
-    n.exceedTol = length(Cmpd[ppb >= Tol.OG.ppb]),
+    MRL.OG.ppb  = first(MRL.OG.ppb),
+    n.exceedTol = length(Cmpd[ppb >= MRL.OG.ppb]),
     .groups = "drop"
   ) %>%
   arrange(Group, desc(n.detects)) %>%
-  relocate(Tol.OG.ppb, n.exceedTol, .after = Class.Pest) %>%
+  relocate(MRL.OG.ppb, n.exceedTol, .after = Class.Pest) %>%
   filter(n.detects > 0) %>%
   group_by(Group) %>%
   mutate(Group = recode(Group, !!!styles.group)) %>%
@@ -792,7 +792,7 @@ df.fig2.heat %>%
     mean        = "Mean",
     se          = "SE",
     max         = "Max",
-    Tol.OG.ppb  = "Organic MRL",
+    MRL.OG.ppb  = "Organic MRL",
     n.exceedTol = "n > MRL"
   ) %>%
   tab_spanner(label = "Detections", columns = 4:7) %>%
@@ -1138,7 +1138,7 @@ df.landscape %>%
   arrange(Farm.Redact) %>%
   gt() %>%
   fmt_number(decimals = 2) %>%
-  tab_spanner(label = "Percent Habitat", columns = 3:5) %>%
+  tab_spanner(label = "Percent Habitat", columns = 2:5) %>%
   # fmt: skip
   cols_label(
     Farm.Redact  = "Apiary",
@@ -1146,7 +1146,7 @@ df.landscape %>%
     Pct.Semi_3km = "Semi",
     Pct.Dev_3km  = "Dev",
     Pct.Nat_3km  = "Nat"
-  ) %>% 
+  ) %>%
   tab_options(table.align = "left")
 ```
 
@@ -1178,6 +1178,11 @@ m.land.numNULL <- glmmTMB(num.Cmpd ~ (1|Apiary),
                           family = "poisson",
                           na.action = "na.fail")
 
+m.test <- glmmTMB(num.Cmpd ~ Pct.Ag_1km + (1|Apiary), 
+                          data   = df.landscape,
+                          family = "poisson",
+                          na.action = "na.fail")
+
 # Function implements dredge() with custom outputs:
 # R^2 and results from a likelihood ratio test
 # It also saves results in a table for publication
@@ -1196,9 +1201,8 @@ do_dredge <- function(model, nModel) {
           "p" = anova$`Pr(>Chisq)`[2]
         )
       },
-      "model.rel" = function(x) {
-        fixef(x)$cond[2] %>% unname() %>% sign()
-      }
+      "model.int" = function(x) fixef(x)$cond[1] %>% unname(),
+      "model.slope" = function(x) fixef(x)$cond[2] %>% unname()
     )
   )
 
@@ -1234,7 +1238,7 @@ df.land.dredge <- bind_rows(
 )
 
 df.land.dredge %>%
-  select(Response, Predictor, model.rel, starts_with("LRtest"), AICc, delta) %>%
+  select(Response, Predictor, model.slope, starts_with("LRtest"), AICc, delta) %>%
 
   # Format data within table
   separate_wider_delim(
@@ -1257,20 +1261,20 @@ df.land.dredge %>%
       "Pct.Ag" ~ "Agricultural",
       .default = Habitat
     ),
-    model.rel = as.character(model.rel),
     model.rel = case_match(
-      model.rel,
+      as.character(sign(model.slope)),
       "1" ~ "Positive",
-      "-1" ~ "Negative",
-      .default = model.rel
+      "-1" ~ "Negative"
     )
-  ) %>%
+  ) %>% 
+  select(-model.slope) %>% 
+  relocate(model.rel, .after = Radius) %>% 
   gt(groupname_col = "Response") %>%
   tab_options(row_group.as_column = T, table.align = "left") %>%
+  cols_width(Response ~ "160px") %>% 
   tab_stubhead("Response") %>%
   tab_spanner(label = "Predictor", columns = 2:3) %>%
   cols_label(
-    Radius = "Radius (km)",
     model.rel = "Relationship",
     LRtest.Chisq = html("&Chi;<sup>2</sup>"),
     LRtest.df = "df",
@@ -1283,3 +1287,76 @@ df.land.dredge %>%
     locations = cells_body(columns = LRtest.p, rows = LRtest.p <= 0.05)
   )
 ```
+
+#### Figure S2. Visualizing results from landscape model building
+
+```{r fig--S2, fig.height=6, fig.width=6}
+# Wrangle wide data for the facetted plot.
+# Use Habitat and buffer radius as columns
+# To plot regression line from glmm (I saved the slope and intercept in 
+# df.land.dredge), make a dataframe of these values
+# -----------------------------------------------------------------------------------
+df.figS2 <- df.landscape %>%
+  select(-starts_with("Pct.Nat")) %>% 
+  pivot_longer(
+    !c(Apiary:Year),
+    names_to = c("Habitat", "Rad.km"),
+    names_pattern = "Pct.(.*)_(.*)km",
+    values_to = "Pct"
+  ) %>%
+  mutate(
+    Habitat = case_match(
+      Habitat,
+      "Ag" ~ "Agricultural",
+      "Semi" ~ "Seminatural",
+      "Dev" ~ "Developed"
+    )
+  )
+
+# Function to label facets ----------------------------------------------------------
+facet_lab <- function(s) {
+  # fmt: skip
+  paste(s, ifelse(suppressWarnings(is.na(as.numeric(s))), "", "km")
+  )
+}
+
+# Elements shared by both plots ----------------------------------------------------
+styles.landColor <- darken(styles.colors[1], amount = 0.2)
+
+styles.figS2 <- list(
+  stat_smooth(
+    method = "lm",
+    formula = y ~ x,
+    color = styles.landColor,
+    fill = styles.landColor
+  ),
+  geom_point(alpha = 0.15),
+  facet_grid(
+    Rad.km ~ Habitat,
+    scales = "free",
+    labeller = as_labeller(facet_lab)
+  ),
+  theme_bw(),
+  theme(
+    strip.background = element_rect(fil = NA, color = NA),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ),
+  xlab("Percent Habitat"),
+  # The "secondary axis" label labels the vertical facets
+  scale_y_continuous(
+    sec.axis = sec_axis(transform = ~., breaks = NULL, name = "Buffer Radius")
+  )
+)
+
+# Build plots ----------------------------------------------------------------------
+((ggplot(df.figS2, aes(x = Pct, y = ppb.sum)) +
+  ylab("Total residue amounts (ppb)")) /
+
+  (ggplot(df.figS2, aes(x = Pct, y = num.Cmpd)) +
+    ylab("Number of residues"))) +
+  plot_annotation(tag_levels = 'A') +
+  plot_layout(axis_titles = "collect_x") &
+  styles.figS2
+```
+
