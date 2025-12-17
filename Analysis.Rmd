@@ -1259,11 +1259,16 @@ do_dredge <- function(model, nModel) {
   return(list(table = tab, models = out))
 }
 
+# Run dredge and save output
+stat.dredge.S <- do_dredge(m.land.sum, m.land.sumNULL)
+stat.dredge.N <- do_dredge(m.land.num, m.land.numNULL)
+
+# Save summary table output from drege
 df.land.dredge <- bind_rows(
-  do_dredge(m.land.sum, m.land.sumNULL)$table %>%
+  stat.dredge.S$table %>%
     mutate(Response = "Sum", .before = Predictor),
 
-  do_dredge(m.land.num, m.land.numNULL)$table %>%
+  stat.dredge.N$table %>%
     mutate(Response = "Num", .before = Predictor)
 )
 
@@ -1355,7 +1360,7 @@ styles.landColor <- darken(styles.colors[1], amount = 0.2)
 
 styles.figS2 <- list(
   stat_smooth(
-    method = "lm",
+    method = "glm",
     formula = y ~ x,
     color = styles.landColor,
     fill = styles.landColor
@@ -1389,4 +1394,114 @@ styles.figS2 <- list(
   plot_layout(axis_titles = "collect_x") &
   styles.figS2
 ```
+
+what if we got the actual prediction?
+
+```{r fig.height=6, fig.width=6, warning=FALSE}
+
+plot_landscape <- function(
+  models = df.land.dredge,
+  dredge = stat.dredge.N,
+  points = df.figS2,
+  resp_subset = "Num",
+  y_var = "num.Cmpd"
+) {
+  predictions <- data.frame()
+
+  # for loop
+  for (n in 2:nrow(filter(models, Response == resp_subset))) {
+    # Retrieve predictor we should generate predictions for
+    term <- filter(models, Response == resp_subset)$Predictor[n]
+
+    # Retrieves model from dredge output. Second row of stat.dredge.N
+    get.models(dredge$models, subset = n)[[1]]
+
+    # generates prediction df
+    predict <- ggpredict(
+      get.models(dredge$models, subset = n)[[1]],
+      terms = term,
+      bias_correction = T
+    ) %>%
+      as.data.frame() %>%
+      select(x, predicted, conf.low, conf.high) %>%
+      mutate(Predictor = term)
+
+    # Add new set of predictions to our dataframe
+    predictions <- bind_rows(predictions, predict)
+
+    # Track progress
+    print(paste("Predicted model", n))
+  }
+
+  # Format the dataframe for plotting
+  predictions <- predictions %>%
+    separate_wider_regex(
+      cols = Predictor,
+      c("Pct.", Habitat = ".*", "_", Rad.km = ".*", "km")
+    ) %>%
+    mutate(
+      Habitat = case_match(
+        Habitat,
+        "Ag" ~ "Agricultural",
+        "Semi" ~ "Seminatural",
+        "Dev" ~ "Developed"
+      )
+    )
+
+  # Construct the plot
+  plot <- ggplot(points) +
+    ylab("Total residue amounts (ppb)") +
+    facet_grid(
+      Rad.km ~ Habitat,
+      scales = "free",
+      labeller = as_labeller(facet_lab)
+    ) +
+    geom_ribbon(
+      data = predictions,
+      aes(x = x, ymin = conf.low, ymax = conf.high),
+      alpha = 0.4,
+      fill = styles.landColor,
+    ) +
+    geom_line(
+      data = predictions,
+      aes(x = x, y = predicted),
+      color = styles.landColor
+    ) +
+    geom_point(aes(x = Pct, y = .data[[y_var]]), alpha = 0.15) +
+    theme_bw() +
+    theme(
+      strip.background = element_rect(fil = NA, color = NA),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+    ) +
+    xlab("Percent Habitat") +
+    # The "secondary axis" label labels the vertical facets
+    scale_y_continuous(
+      sec.axis = sec_axis(transform = ~., breaks = NULL, name = "Buffer Radius")
+    )
+
+  return(plot)
+}
+
+fig.S2A <- plot_landscape(
+  models = df.land.dredge,
+  dredge = stat.dredge.N,
+  points = df.figS2,
+  resp_subset = "Num",
+  y_var = "num.Cmpd"
+)
+
+fig.S2B <- plot_landscape(
+  models = df.land.dredge,
+  dredge = stat.dredge.S,
+  points = df.figS2,
+  resp_subset = "Sum",
+  y_var = "ppb.sum"
+)
+
+fig.S2A / fig.S2B  +
+  plot_annotation(tag_levels = 'A') +
+  plot_layout(axis_titles = "collect_x")
+```
+
 
