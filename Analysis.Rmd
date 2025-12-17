@@ -1,6 +1,13 @@
 ---
 title: "Organic honey production may be possible in the Continental U.S."
-subtitle: "Data analysis, figures, and tables"
+subtitle: "Data and analysis"
+author: 
+ - Benedict X. DeMoras^[Cornell University, bd379@cornell.edu]
+ - Angélica B. Sanchez^[Cornell University]
+ - Emily O’Neil^[Cornell University]
+ - Robyn M. Underwood^[The Pennsylvania State University]
+ - Margarita M. López-Uribe^[The Pennsylvania State University]
+ - Scott McArt^[Cornell University]
 output: 
   html_document:
     code_folding: show
@@ -18,6 +25,7 @@ library(ggspatial)      # Provides lengend scale and north for map
 library(ggrepel)        # geom_text_repel()
 library(khroma)         # Colors for heatmap
 library(patchwork)      # Arrange ggplots in grids
+library(ggedit)         # Ability to remove a geom for vis. abstract
 library(gt)             # GTables
 library(glmmTMB)        # GLMMs
 library(performance)    # check_overdispersion
@@ -35,7 +43,7 @@ source("functions/std_error.R") # Standard error calc
 
 ### Importing and cleaning data
 
-First, I import some basic metadata on the honey samples, pesticides, USDA organic tolerances, and experimental colonies.
+First, we import some basic metadata on the honey samples, pesticides, USDA organic tolerances, and experimental colonies.
 
 ```{r importMetaData, message=FALSE}
 # Import metadata
@@ -60,13 +68,13 @@ meta.Cols <- read_csv(
 )
 ```
 
-Next, I need to import the Excel files from the Cornell Chemical Ecology Core Facility and convert them to a rectangular format for analysis in R. I created a function, `read_pesticides()`, that does this. The function pivots the pesticide data and tacks on the columns containing the limits of quantification and detection. Some important steps include:
+Next, we need to import the Excel files from the Cornell Chemical Ecology Core Facility and convert them to a rectangular format for analysis in R. We created a function, `read_pesticides()`, that does this. The function pivots the pesticide data and tacks on the columns containing the limits of quantification and detection. Some important steps include:
 
 1.  Read data from the spreadsheet.
 2.  Import limits of detections (reported in ng of analyte).
 3.  If data reads as `n.d.` or `N/F`, replace that observation with `0` ppb. If data reads as `<LOQ`, replace it with the sample-specific LOQ value for that compound, converted to ppb. (We divide the LOQ in ng by the sample weight). Likewise, `<ULOQ` values are converted to the ULOQ value.
 
-I also follow guidelines in [USDA Publication 2613: Responding to Results from Pesticide Residue Testing](https://www.ams.usda.gov/sites/default/files/media/2613.pdf) to determine whether residue levels in each sample exceed organic tolerances. Basically, there are established limits for Amitraz and Coumaphos in honey and wax. Residue limits for every other compound are set at 10 ppb.
+We also follow guidelines in [USDA Publication 2613: Responding to Results from Pesticide Residue Testing](https://www.ams.usda.gov/sites/default/files/media/2613.pdf) to determine whether residue levels in each sample exceed organic tolerances. Basically, there are established limits for Amitraz and Coumaphos in honey and wax. Residue limits for every other compound are set at 10 ppb.
 
 ```{r importExcel, message=F}
 source("functions/read_pesticides.R")
@@ -94,13 +102,13 @@ list.H <- list(
 )
 rm(data.H1.raw, data.H2.raw)
 
-# I create a function that cleans up the pesticide data.
-# It is a function so I can use the function on both batches of honey data at once
+# We create a function that cleans up the pesticide data.
+# This allows us to use the function on both batches of honey data at once
 clean_pesticide_data <- function(x) {
   if (!any(grepl("ULOQ", names(x)))) {
     # If dataset reports ULOL vs ULOQ.
     # Mutate() functions below won't work unless we have an ULOQ value.
-    # So I set this to NA just in case it's different from ULOQ
+    # So we set this to NA just in case it's different from ULOQ
     ULOQ.col <- "ULOQ.ppb"
     x[[ULOQ.col]] <- NA
   }
@@ -621,7 +629,7 @@ ggsave(
 
 #### Stats for figure 3: Comparing contamination across groups of honey
 
-First, I use the number of compounds per sample as the response variable.
+First, we use the number of compounds per sample as the response variable.
 
 ```{r stats--fig3A}
 # Number of residues vs. Group -----------------------------------------------------
@@ -641,10 +649,10 @@ m.fig3ANULL <- glmmTMB(
 )
 
 anova(m.fig3A, m.fig3ANULL)
-emmeans(m.fig3A, pairwise ~ Group, type = "response") # back-transforms means
+(stat.emm.f3A <- summary(emmeans(m.fig3A, pairwise ~ Group, type = "response")))
 ```
 
-Then I look at the total amount of residues in each sample as the response variable.
+Then we look at the total amount of residues in each sample as the response variable.
 
 ```{r stats--fig3B}
 # Amount of residues vs. group ------------------------------------------------------
@@ -661,59 +669,16 @@ m.fig3BNULL <- glmmTMB(
 )
 
 anova(m.fig3B, m.fig3BNULL)
-emmeans(m.fig3B, pairwise ~ Group, type = "response") # back-transforms means
+(stat.emm.f3b <- summary(emmeans(m.fig3B, pairwise ~ Group, type = "response")))
 ```
 
 #### Figure 3. Comparison of the number of pesticide residues in sampled honey and the summed amount of residues per sample
 
 ```{r fig--3}
-# Define plot styles ---------------------------------------------------------------
+# Define plot styles 
 styles.colors <- color("davos", reverse = T)(6)[2:5]
 
-styles.bar <- list(
-  # See @link https://stackoverflow.com/a/65765891/5025767
-  geom_bar(
-    stat = "summary",
-    fun = "mean",
-    position = position_dodge(0.9),
-    width = 0.8,
-    color = "black",
-    alpha = 1
-  ),
-
-  # The height parameter should be low, so discrete values don't look continuous
-  geom_jitter(
-    position = position_jitter(height = 0.01, width = 0.2),
-    alpha = 1,
-    shape = 21,
-    color = "black"
-  ),
-
-  geom_errorbar(
-    stat = "summary",
-    fun.data = "mean_se",
-    width = 0.1,
-    linewidth = 1.8,
-    color = "white"
-  ),
-  geom_errorbar(
-    stat = "summary",
-    fun.data = "mean_se",
-    width = 0.1,
-    linewidth = 1
-  ),
-
-  scale_x_discrete(labels = styles.group),
-  scale_fill_manual(values = styles.colors),
-
-  # Define the chart theme
-  theme_classic(),
-  theme(legend.position = "none")
-)
-
-styles.ylab.num <- list(ylab("Number of residues"))
-styles.ylab.sumPPB <- list(ylab("Total residue amounts (ppb)"))
-# Build plots -------------------------------------------------------------------
+# Significance labels
 # fmt: skip
 df.fig3.signif <- tibble(
   Sample.Type  = rep("Honey", 4),
@@ -724,33 +689,91 @@ df.fig3.signif <- tibble(
   y.Amt        = rep(30, 4)
 )
 
-(fig.3 <- ((ggplot(
-  data = df.fig3.summ,
-  aes(x = Group, y = num.Cmpd, fill = Group)
+# Build plots -------------------------------------------------------------------
+fig.3a <- ggplot(
+  data = stat.emm.f3A$emmeans,
+  aes(x = Group, y = rate, fill = Group)
 ) +
-  styles.ylab.num +
+  geom_col(
+    position = position_dodge(0.9),
+    width = 0.8,
+    color = "black",
+    alpha = 1
+  ) +
+  geom_jitter(
+    data = df.fig3.summ,
+    aes(y = num.Cmpd),
+    position = position_jitter(height = 0.01, width = 0.2),
+    alpha = 1,
+    shape = 21,
+    color = "black"
+  ) +
+  geom_errorbar(
+    aes(ymin = rate - SE, ymax = rate + SE),
+    width = 0.1,
+    linewidth = 1.8,
+    color = "white"
+  ) +
+  geom_errorbar(
+    aes(ymin = rate - SE, ymax = rate + SE),
+    width = 0.1,
+    linewidth = 1
+  ) +
   geom_text(
     data = df.fig3.signif,
     aes(x = Group, y = y.Nr, label = Contrast.Nr)
-  )) /
-
-  (ggplot(
-    data = df.fig3.summ,
-    aes(x = Group, y = ppb.sum, fill = Group)
   ) +
-    styles.ylab.sumPPB +
-    geom_text(
-      data = df.fig3.signif,
-      aes(x = Group, y = y.Amt, label = Contrast.Amt)
-    )) +
+  ylab("Number of residues")
 
-  plot_annotation(tag_levels = 'A') &
-  styles.bar &
-  coord_trans(y = "log1p")))
+fig.3b <- ggplot(
+  data = stat.emm.f3b$emmeans,
+  aes(x = Group, y = response, fill = Group)
+) +
+  geom_col(
+    position = position_dodge(0.9),
+    width = 0.8,
+    color = "black",
+    alpha = 1
+  ) +
+  geom_jitter(
+    data = df.fig3.summ,
+    aes(y = ppb.sum),
+    position = position_jitter(height = 0.01, width = 0.2),
+    alpha = 1,
+    shape = 21,
+    color = "black"
+  ) +
+  geom_errorbar(
+    aes(ymin = response - SE, ymax = response + SE),
+    width = 0.1,
+    linewidth = 1.8,
+    color = "white"
+  ) +
+  geom_errorbar(
+    aes(ymin = response - SE, ymax = response + SE),
+    width = 0.1,
+    linewidth = 1
+  ) +
+  geom_text(
+    data = df.fig3.signif,
+    aes(x = Group, y = y.Amt, label = Contrast.Amt)
+  ) +
+  ylab("Total residue amounts (ppb)")
+
+(fig.3a /
+  fig.3b +
+  plot_layout(axis_titles = "collect_x") &
+  coord_trans(y = "log1p") &
+  scale_x_discrete(labels = styles.group) &
+  scale_fill_manual(values = styles.colors) &
+  xlab("Type of honey") &
+  theme_classic() &
+  theme(legend.position = "none")) +
+  plot_annotation(tag_levels = 'A') 
 
 ggsave(
   "Figure_3.png",
-  plot = fig.3,
+  plot = last_plot(),
   path = "figures",
   dpi = 500,
   width = 7,
@@ -990,6 +1013,13 @@ fig.5A <- ggplot(df.fig5A.MRLHeat) +
 # Fig 5B: Plot w/ proportion of samples above MRL ---------------------------------
 fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
   geom_bar(position = "fill") +
+  geom_jitter(
+    aes(y = ifelse(Sample.Exceed == "Yes", 1, 0)),
+    position = position_jitter(height = 0.01, width = 0.3),
+    shape = 1,
+    alpha = 0.6,
+    color = "black"
+  ) +
   scale_x_discrete(labels = styles.group) +
   scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
   ylab("\nProp. of samples >MRL\n") +
@@ -997,14 +1027,14 @@ fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
   theme(legend.position = "none")
 
 # Assemble combined figure
-(fig.5 <- (fig.5A) /
+((fig.5A) /
   free(fig.5B) +
   plot_layout(heights = c(2, 3)) +
   plot_annotation(tag_levels = 'A'))
 
 ggsave(
   "Figure_5.png",
-  plot = fig.5,
+  plot = last_plot(),
   path = "figures",
   dpi = 500,
   width = 7,
@@ -1015,7 +1045,7 @@ ggsave(
 #### Figure 5B for visual abstract 
 
 ```{r fig--5b-abstract, fig.height=1.5, fig.width=3.75, message=FALSE}
-(fig.5B.abs <- fig.5B +
+(fig.5B.abs <- remove_geom(fig.5B, "point") +
   scale_x_discrete(
     labels = c(
       "OREI" = "N.E. USA",
@@ -1039,7 +1069,7 @@ ggsave(
 
 ### 3.3. Did landscape composition predict whether detected pesticide exposure?
 
-Here, I use the [`CropScapeR`](https://github.com/cbw1243/CropScapeR) package to download the data directly from R. I create a function, called `get_apiary_CDL()` that makes this process a little easier. Given a dataframe of apiary coordinates (columns `Apiary`, `Lon`, `Lat`), it will return a dataframe of percentages of each crop/landscape type within each buffer. For optimization, the function also accepts inputs of `gc_shp` (T/F, outputs a shapefile of the buffer), `gc_tiff` (whether to save TIFFs of the buffered CDL), `gc_CDL` (T/F, useful if we want to save shapefiles but not actually download data yet), and `gc_log`, (T/F, whether the function should log progress to the console).
+Here, we use the [`CropScapeR`](https://github.com/cbw1243/CropScapeR) package to download the data directly from R. We create a function, called `get_apiary_CDL()` that makes this process a little easier. Given a dataframe of apiary coordinates (columns `Apiary`, `Lon`, `Lat`), it will return a dataframe of percentages of each crop/landscape type within each buffer. For optimization, the function also accepts inputs of `gc_shp` (T/F, outputs a shapefile of the buffer), `gc_tiff` (whether to save TIFFs of the buffered CDL), `gc_CDL` (T/F, useful if we want to save shapefiles but not actually download data yet), and `gc_log`, (T/F, whether the function should log progress to the console).
 
 #### Table S6. Landscape composition within a 3 km radius of each of the 6 apiaries in 2024. 
 
