@@ -11,6 +11,7 @@ author:
 output: 
   html_document:
     code_folding: show
+    theme: spacelab
     highlight: tango
 ---
 
@@ -35,9 +36,12 @@ library(vegan)          # For ordinations
 # devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis) # Pairwise PERMANOVA
 library(MuMIn)          # AICC comparison
+library(ggeffects)      # glmm predictions
 
 source("functions/std_error.R") # Standard error calc
 ```
+
+Analysis, results and figures are organized according to where they appear in the manuscript.
 
 ## 2. Methods
 
@@ -537,6 +541,18 @@ bind_rows(
     by = join_by(Group)
   ) %>%
   relocate(Cmpds, .after = Group) %>%
+  mutate(
+    "Type of honey" = case_match(
+      Group,
+      "OREI" ~ "MNG ORG: New York & Pennsylvania",
+      "OG-HI" ~ "ORG: Hawaii",
+      "OG-IMP" ~ "ORG: Grocery Imported",
+      "CNV" ~ "CNV: Grocery",
+      .default = Group
+    ),
+    .keep = "unused",
+    .before = everything()
+  ) %>%
 
   gt() %>%
   tab_spanner(label = "Summed amount/sample (ppb)", columns = 3:6) %>%
@@ -844,7 +860,7 @@ df.fig4.NMDS <- data.H.Wide %>%
 
 # =(1)= Create clustering vector.
 # Length of cluster vector MUST equal number of rows in df.fig4.NMDS
-stat.ISA.grp <- meta.Ord %>%
+fct.ISA.grp <- meta.Ord %>%
   inner_join(
     df.fig4.NMDS %>% rownames_to_column("Sample.ID"),
     by = join_by(Sample.ID)
@@ -853,7 +869,7 @@ stat.ISA.grp <- meta.Ord %>%
 
 # =(2)= Run the ISA.
 set.seed(42) # Reproducibility
-stat.ISA <- multipatt(x = df.fig4.NMDS, cluster = stat.ISA.grp)
+stat.ISA <- multipatt(x = df.fig4.NMDS, cluster = fct.ISA.grp)
 
 # =(3)= Extract indicator species/compounds from the ISA
 stat.ISA.tab <- stat.ISA$sign %>%
@@ -919,14 +935,14 @@ if (!file.exists(MDS.path)) {
 }
 
 stat.ISA.indic <- stat.ISA.tab %>% # Group col must be a factor to plot correctly
-  mutate(Groups = factor(Groups, levels = levels(stat.ISA.grp))) %>%
+  mutate(Groups = factor(Groups, levels = levels(fct.ISA.grp))) %>%
   select(Cmpd, Groups)
 
 source("functions/plot_NMDS.R")
 
 (fig.4 <- plot_NMDS(
   MDS = stat.MDS,
-  grp = stat.ISA.grp,
+  grp = fct.ISA.grp,
   indic = stat.ISA.indic,
   labs = styles.group,
   colors = lighten(styles.colors, 0.2)
@@ -945,15 +961,24 @@ ggsave(
 #### Table S4.Pairwise PERMANOVA comparing dissimilarity in composition of pesticides between groups of honey samples.
 
 ```{r tab--S4}
-adonis2(df.fig4.NMDS ~ stat.ISA.grp, method = "bray")
+fct.PERMANOVA <- fct.ISA.grp %>%
+  fct_recode(
+    "MNG ORG: New York & Pennsylvania" = "OREI",
+    "ORG: Hawaii" = "OG-HI",
+    "ORG: Grocery Imported" = "OG-IMP",
+    "CNV: Grocery" = "CNV"
+  )
+
+adonis2(df.fig4.NMDS ~ fct.PERMANOVA, method = "bray")
 
 # Now do a pairwise PERMANOVA to see which groups differ
-pairwise.adonis(df.fig4.NMDS, factors = stat.ISA.grp) %>%
+pairwise.adonis(df.fig4.NMDS, factors = fct.PERMANOVA) %>%
   select(-Df, -p.value, -sig) %>%
   gt() %>%
   fmt_number(decimals = 3) %>%
   cols_label(
     pairs = "Pairs",
+    SumsOfSqs = "SS",
     F.Model = "F model",
     R2 = html("R<sup>2</sup>"),
     p.adjusted = "P adjusted"
@@ -966,9 +991,20 @@ pairwise.adonis(df.fig4.NMDS, factors = stat.ISA.grp) %>%
 ```{r tab--S5}
 # Returns list of indicator species in each group in a readable format
 # stat.ISA.summary <- summary(stat.ISA, indvalcomp = T)
-gt(stat.ISA.tab) %>%
+stat.ISA.tab %>%
+  mutate(
+    Groups = case_match(
+      Groups,
+      "OREI" ~ "MNG ORG: New York & Pennsylvania",
+      "OG-HI" ~ "ORG: Hawaii",
+      "OG-IMP" ~ "ORG: Grocery Imported",
+      "CNV" ~ "CNV: Grocery",
+      "OREI+CNV" ~ "MNG ORG & CNV",
+    )
+  ) %>%
+  gt() %>%
   fmt_number(decimals = 3) %>%
-  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p") %>% 
+  cols_label(Cmpd = "Compound", stat = "IV", p.value = "p") %>%
   tab_options(table.align = "left")
 ```
 
@@ -1172,10 +1208,10 @@ df.landscape %>%
   # fmt: skip
   cols_label(
     Farm.Redact  = "Apiary",
-    Pct.Ag_3km   = "Ag",
-    Pct.Semi_3km = "Semi",
-    Pct.Dev_3km  = "Dev",
-    Pct.Nat_3km  = "Nat"
+    Pct.Ag_3km   = "Agricultural",
+    Pct.Semi_3km = "Seminatural",
+    Pct.Dev_3km  = "Developed",
+    Pct.Nat_3km  = "Natural"
   ) %>%
   tab_options(table.align = "left")
 ```
@@ -1273,7 +1309,7 @@ df.land.dredge <- bind_rows(
 )
 
 df.land.dredge %>%
-  select(Response, Predictor, model.slope, starts_with("LRtest"), AICc, delta) %>%
+  select(Response, Predictor, model.slope, Rsq, starts_with("LRtest"), AICc, delta) %>%
 
   # Format data within table
   separate_wider_delim(
@@ -1311,12 +1347,13 @@ df.land.dredge %>%
   tab_spanner(label = "Predictor", columns = 2:3) %>%
   cols_label(
     model.rel = "Relationship",
+    Rsq = html("R<sup>2</sup><sub>LR</sub>"),
     LRtest.Chisq = html("&Chi;<sup>2</sup>"),
     LRtest.df = "df",
     LRtest.p = "p",
     delta = html("&Delta;AICc")
   ) %>%
-  fmt_number(columns = c(5, 7:9), decimals = 3) %>%
+  fmt_number(columns = c(5:6, 8:10), decimals = 3) %>%
   tab_style(
     style = list(cell_text(weight = "bold")),
     locations = cells_body(columns = LRtest.p, rows = LRtest.p <= 0.05)
@@ -1325,14 +1362,14 @@ df.land.dredge %>%
 
 #### Figure S2. Visualizing results from landscape model building
 
-```{r fig--S2, fig.height=6, fig.width=6}
+```{r fig--S2, fig.height=6, fig.width=6, warning=FALSE}
 # Wrangle wide data for the facetted plot.
 # Use Habitat and buffer radius as columns
 # To plot regression line from glmm (I saved the slope and intercept in 
 # df.land.dredge), make a dataframe of these values
 # -----------------------------------------------------------------------------------
 df.figS2 <- df.landscape %>%
-  select(-starts_with("Pct.Nat")) %>% 
+  select(-starts_with("Pct.Nat")) %>%
   pivot_longer(
     !c(Apiary:Year),
     names_to = c("Habitat", "Rad.km"),
@@ -1348,109 +1385,76 @@ df.figS2 <- df.landscape %>%
     )
   )
 
-# Function to label facets ----------------------------------------------------------
+# For plot formatting ----------------------------------------------------------
 facet_lab <- function(s) {
   # fmt: skip
   paste(s, ifelse(suppressWarnings(is.na(as.numeric(s))), "", "km")
   )
 }
 
-# Elements shared by both plots ----------------------------------------------------
 styles.landColor <- darken(styles.colors[1], amount = 0.2)
 
-styles.figS2 <- list(
-  stat_smooth(
-    method = "glm",
-    formula = y ~ x,
-    color = styles.landColor,
-    fill = styles.landColor
-  ),
-  geom_point(alpha = 0.15),
-  facet_grid(
-    Rad.km ~ Habitat,
-    scales = "free",
-    labeller = as_labeller(facet_lab)
-  ),
-  theme_bw(),
-  theme(
-    strip.background = element_rect(fil = NA, color = NA),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank()
-  ),
-  xlab("Percent Habitat"),
-  # The "secondary axis" label labels the vertical facets
-  scale_y_continuous(
-    sec.axis = sec_axis(transform = ~., breaks = NULL, name = "Buffer Radius")
-  )
-)
-
-# Build plots ----------------------------------------------------------------------
-((ggplot(df.figS2, aes(x = Pct, y = ppb.sum)) +
-  ylab("Total residue amounts (ppb)")) /
-
-  (ggplot(df.figS2, aes(x = Pct, y = num.Cmpd)) +
-    ylab("Number of residues"))) +
-  plot_annotation(tag_levels = 'A') +
-  plot_layout(axis_titles = "collect_x") &
-  styles.figS2
-```
-
-what if we got the actual prediction?
-
-```{r fig.height=6, fig.width=6, warning=FALSE}
-
+# Function to plot each panel of the landscape visualization
 plot_landscape <- function(
   models = df.land.dredge,
   dredge = stat.dredge.N,
   points = df.figS2,
-  resp_subset = "Num",
+  resp_subset = "",
   y_var = "num.Cmpd"
 ) {
-  predictions <- data.frame()
+  path.LandPred <- paste0("cache/LandscapePred", resp_subset, ".csv")
 
-  # for loop
-  for (n in 2:nrow(filter(models, Response == resp_subset))) {
-    # Retrieve predictor we should generate predictions for
-    term <- filter(models, Response == resp_subset)$Predictor[n]
+  if (!file.exists(path.LandPred)) {
+    predictions <- data.frame()
 
-    # Retrieves model from dredge output. Second row of stat.dredge.N
-    get.models(dredge$models, subset = n)[[1]]
+    # Loop thru each model we considered
+    for (n in 2:nrow(filter(models, Response == resp_subset))) {
+      # Retrieve predictor we should generate predictions for
+      term <- filter(models, Response == resp_subset)$Predictor[n]
 
-    # generates prediction df
-    predict <- ggpredict(
-      get.models(dredge$models, subset = n)[[1]],
-      terms = term,
-      bias_correction = T
-    ) %>%
-      as.data.frame() %>%
-      select(x, predicted, conf.low, conf.high) %>%
-      mutate(Predictor = term)
+      # Retrieves model from dredge output. Second row of stat.dredge.N
+      get.models(dredge$models, subset = n)[[1]]
 
-    # Add new set of predictions to our dataframe
-    predictions <- bind_rows(predictions, predict)
+      # generates prediction df
+      predict <- ggpredict(
+        get.models(dredge$models, subset = n)[[1]],
+        terms = term,
+        bias_correction = T
+      ) %>%
+        as.data.frame() %>%
+        select(x, predicted, conf.low, conf.high) %>%
+        mutate(Predictor = term)
 
-    # Track progress
-    print(paste("Predicted model", n))
-  }
+      # Add new set of predictions to our dataframe
+      predictions <- bind_rows(predictions, predict)
 
-  # Format the dataframe for plotting
-  predictions <- predictions %>%
-    separate_wider_regex(
-      cols = Predictor,
-      c("Pct.", Habitat = ".*", "_", Rad.km = ".*", "km")
-    ) %>%
-    mutate(
-      Habitat = case_match(
-        Habitat,
-        "Ag" ~ "Agricultural",
-        "Semi" ~ "Seminatural",
-        "Dev" ~ "Developed"
+      # Track progress
+      message(paste("Predicted model", n))
+    }
+
+    # Format the dataframe for plotting
+    predictions <- predictions %>%
+      separate_wider_regex(
+        cols = Predictor,
+        c("Pct.", Habitat = ".*", "_", Rad.km = ".*", "km")
+      ) %>%
+      mutate(
+        Habitat = case_match(
+          Habitat,
+          "Ag" ~ "Agricultural",
+          "Semi" ~ "Seminatural",
+          "Dev" ~ "Developed"
+        )
       )
-    )
+
+    # Cache predictions
+    write_csv(predictions, path.LandPred)
+  } else {
+    predictions <- read_csv(path.LandPred, show_col_types = F)
+  }
 
   # Construct the plot
   plot <- ggplot(points) +
-    ylab("Total residue amounts (ppb)") +
     facet_grid(
       Rad.km ~ Habitat,
       scales = "free",
@@ -1482,14 +1486,15 @@ plot_landscape <- function(
 
   return(plot)
 }
-
+# Construct plots -----------------------------------------------------------------
 fig.S2A <- plot_landscape(
   models = df.land.dredge,
   dredge = stat.dredge.N,
   points = df.figS2,
   resp_subset = "Num",
   y_var = "num.Cmpd"
-)
+) +
+  ylab("Number of residues")
 
 fig.S2B <- plot_landscape(
   models = df.land.dredge,
@@ -1497,11 +1502,21 @@ fig.S2B <- plot_landscape(
   points = df.figS2,
   resp_subset = "Sum",
   y_var = "ppb.sum"
-)
+) +
+  ylab("Total residue amounts (ppb)")
 
-fig.S2A / fig.S2B  +
+fig.S2A /
+  fig.S2B +
   plot_annotation(tag_levels = 'A') +
   plot_layout(axis_titles = "collect_x")
-```
 
+ggsave(
+  "Supplemental_FigS2.png",
+  plot = last_plot(),
+  path = "figures",
+  dpi = 500,
+  width = 6,
+  height = 6
+)
+```
 
