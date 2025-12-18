@@ -67,8 +67,7 @@ meta.Tols <- read_csv(
 )
 meta.Cols <- read_csv(
   "data/metadata/colonies-OREI.csv",
-  col_types = "fffff",
-  col_select = c(-Position, -Pi)
+  col_types = "ffff"
 )
 ```
 
@@ -190,6 +189,11 @@ styles.group <- c(
 
 #### Figure 1. Map of the Eastern United States indicating the locations of organic apiaries in the states of New York and Pennsylvania
 
+```{r mapAPI, include=FALSE}
+# REMOVE before publication!!
+basemaps::set_defaults(map_service = "mapbox", map_token = "")
+```
+
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
 # A dataframe of apiaries and GPS coordinates.
 meta.farms <- read.csv("data/landscape/apiary-locations-OREI.csv")
@@ -281,13 +285,10 @@ plot_map <- function(df_coords, res, expand, fPull) {
   return(map)
 }
 
-# REMOVE before publication!!
-basemaps::set_defaults(map_service = "mapbox", map_token = "pk.eyJ1IjoiYmRlbW9yYXMiLCJhIjoiY21pZ3NlOWpxMGFuNDNkcThmdmk5b2lpNCJ9.qZXzdyBN60LF-F-3wbgN1w")
-
 # Create a spatial dataframe of farm locations and leader lines
 # # fmt: skip
 sf.labels <- data.frame(
-  Farm.Redact = c("PA-3", "PA-2", "PA-1", "NY-3", "NY-2", "NY-1"),
+  Apiary      = c("PA-3", "PA-2", "PA-1", "NY-3", "NY-2", "NY-1"),
   lab.lon     = c(-75,    -78.6,  -78.6,  -75.3,  -75,    -77.5),
   lab.lat     = c(41.2,   41.5,   40.5,   43.5,   42.4,   42.3)) %>% 
   st_as_sf(coords = c("lab.lon", "lab.lat"), crs = 4326)
@@ -295,7 +296,7 @@ sf.labels <- data.frame(
 # Create lines between apiaries and labels
 sf.lines <- st_sf(
   crs = st_crs(sf.labels),
-  Farm.Redact = sf.labels$Farm.Redact,
+  Apiary = sf.labels$Apiary,
   geometry = st_sfc(mapply(
     function(p1, p2) {
       st_cast(st_union(p1, p2), "LINESTRING")
@@ -311,7 +312,7 @@ sf.lines <- st_sf(
   geom_sf(data = sf.lines, linewidth = 0.5) +
   geom_text_repel(
     data = sf.labels,
-    aes(label = Farm.Redact, geometry = geometry),
+    aes(label = Apiary, geometry = geometry),
     stat = "sf_coordinates",
     bg.r = 0.2,
     bg.color = "white",
@@ -575,6 +576,8 @@ bind_rows(
     ends_with("Max") ~ "Max."
   ) %>% 
   tab_options(table.align = "left")
+
+rm(summTab)
 ```
 
 #### Figure 2. Heatmap showing overall pesticide residue content of the sampled honeys
@@ -1140,11 +1143,15 @@ if (!file.exists(path.CDL)) {
 
   rm(CDL.OREI.1km, CDL.OREI.3km, CDL.OREI.6km)
 
-  write_csv(CDL, path.CDL)
+  write_csv(data.CDL, path.CDL)
+
 } else {
+  
   data.CDL <- read_csv(path.CDL, col_types = "ffffd")
+  
 }
-rm(path.CDL)
+
+rm(path.CDL, get_apiary_CDL)
 
 # = (2) Classify habitat ============================================================
 
@@ -1198,16 +1205,13 @@ df.landscape <- left_join(
 df.landscape %>%
   select(Apiary, ends_with("_3km")) %>%
   unique() %>%
-  left_join(select(meta.farms, Apiary, Farm.Redact), by = join_by(Apiary)) %>%
-  select(-Apiary) %>%
-  relocate(Farm.Redact, .before = everything()) %>%
-  arrange(Farm.Redact) %>%
+  arrange(as.character(Apiary)) %>%
   gt() %>%
   fmt_number(decimals = 2) %>%
   tab_spanner(label = "Percent Habitat", columns = 2:5) %>%
   # fmt: skip
   cols_label(
-    Farm.Redact  = "Apiary",
+    Apiary  = "Apiary",
     Pct.Ag_3km   = "Agricultural",
     Pct.Semi_3km = "Seminatural",
     Pct.Dev_3km  = "Developed",

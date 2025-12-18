@@ -1,73 +1,73 @@
-State,Apiary,Position,Colony.ID,Trt,Pi
-PA,Slatington,1,101,Double,na
-PA,Slatington,2,102,Double,na
-PA,Slatington,3,103,Single,na
-PA,Slatington,4,104,Single,na
-PA,Slatington,5,105,Double,na
-PA,Slatington,6,106,Double,na
-PA,Slatington,7,107,Single,W1
-PA,Slatington,8,108,Single,W2
-PA,Slatington,9,109,Double,Q
-PA,Slatington,10,110,Double,W3
-PA,Slatington,11,111,Single,W4
-PA,Slatington,12,112,Double,W5
-PA,Spring Mills,1,139,Double,na
-PA,Spring Mills,2,140,Double,W1
-PA,Spring Mills,3,141,Single,na
-PA,Spring Mills,4,142,Double,na
-PA,Spring Mills,5,143,Single,W2
-PA,Spring Mills,6,144,Single,Q
-PA,Spring Mills,7,150,Double,W3
-PA,Spring Mills,8,160,Single,na
-PA,Spring Mills,9,152,Double,W4
-PA,Spring Mills,10,156,Single,na
-PA,Spring Mills,11,145,Single,W5
-PA,Spring Mills,12,146,Double,na
-PA,Beech Creek,1,147,Double,na
-PA,Beech Creek,2,148,Single,W1
-PA,Beech Creek,3,149,Double,W2
-PA,Beech Creek,4,151,Single,na
-PA,Beech Creek,5,153,Double,na
-PA,Beech Creek,6,154,Double,Q
-PA,Beech Creek,7,155,Single,W3
-PA,Beech Creek,8,157,Single,na
-PA,Beech Creek,9,158,Double,W4
-PA,Beech Creek,10,159,Single,W5
-PA,Beech Creek,11,161,Double,na
-PA,Beech Creek,12,162,Single,na
-NY,Triple 3,1-Jan,176,Single,na
-NY,Triple 3,2-Jan,171,Double,na
-NY,Triple 3,3-Jan,173,Double,W5
-NY,Triple 3,4-Jan,182,Single,W4
-NY,Triple 3,1-Feb,184,Double,na
-NY,Triple 3,2-Feb,165,Double,na
-NY,Triple 3,3-Feb,166,Double,Q
-NY,Triple 3,4-Feb,164,Double,W1
-NY,Triple 3,1-Mar,170,Single,na
-NY,Triple 3,2-Mar,185,Single,na
-NY,Triple 3,3-Mar,181,Single,W3
-NY,Triple 3,4-Mar,174,Single,W2
-NY,Peck,1-Jan,198,Single,na
-NY,Peck,2-Jan,177,Single,na
-NY,Peck,3-Jan,197,Single,W5
-NY,Peck,4-Jan,196,Double,W4
-NY,Peck,1-Feb,167,Single,na
-NY,Peck,2-Feb,195,Double,na
-NY,Peck,3-Feb,172,Double,Q
-NY,Peck,4-Feb,179,Single,W1
-NY,Peck,1-Mar,163,Double,na
-NY,Peck,2-Mar,180,Double,na
-NY,Peck,3-Mar,183,Double,W2
-NY,Peck,4-Mar,169,Single,W3
-NY,Murraydale,1-Jan,178,Double,W3
-NY,Murraydale,2-Jan,175,Double,W2
-NY,Murraydale,3-Jan,194,Single,na
-NY,Murraydale,4-Jan,193,Single,na
-NY,Murraydale,1-Feb,186,Single,W1
-NY,Murraydale,2-Feb,168,Single,Q
-NY,Murraydale,1-Mar,192,Single,W5
-NY,Murraydale,2-Mar,191,Double,W4
-NY,Murraydale,3-Mar,190,Double,na
-NY,Murraydale,4-Mar,189,Double,na
-NY,Murraydale,1-Apr,188,Double,na
-NY,Murraydale,2-Apr,187,Single,na
+State,Apiary,Colony.ID,Trt
+PA,PA-3,101,Double
+PA,PA-3,102,Double
+PA,PA-3,103,Single
+PA,PA-3,104,Single
+PA,PA-3,105,Double
+PA,PA-3,106,Double
+PA,PA-3,107,Single
+PA,PA-3,108,Single
+PA,PA-3,109,Double
+PA,PA-3,110,Double
+PA,PA-3,111,Single
+PA,PA-3,112,Double
+PA,PA-1,139,Double
+PA,PA-1,140,Double
+PA,PA-1,141,Single
+PA,PA-1,142,Double
+PA,PA-1,143,Single
+PA,PA-1,144,Single
+PA,PA-1,150,Double
+PA,PA-1,160,Single
+PA,PA-1,152,Double
+PA,PA-1,156,Single
+PA,PA-1,145,Single
+PA,PA-1,146,Double
+PA,PA-2,147,Double
+PA,PA-2,148,Single
+PA,PA-2,149,Double
+PA,PA-2,151,Single
+PA,PA-2,153,Double
+PA,PA-2,154,Double
+PA,PA-2,155,Single
+PA,PA-2,157,Single
+PA,PA-2,158,Double
+PA,PA-2,159,Single
+PA,PA-2,161,Double
+PA,PA-2,162,Single
+NY,NY-1,176,Single
+NY,NY-1,171,Double
+NY,NY-1,173,Double
+NY,NY-1,182,Single
+NY,NY-1,184,Double
+NY,NY-1,165,Double
+NY,NY-1,166,Double
+NY,NY-1,164,Double
+NY,NY-1,170,Single
+NY,NY-1,185,Single
+NY,NY-1,181,Single
+NY,NY-1,174,Single
+NY,NY-2,198,Single
+NY,NY-2,177,Single
+NY,NY-2,197,Single
+NY,NY-2,196,Double
+NY,NY-2,167,Single
+NY,NY-2,195,Double
+NY,NY-2,172,Double
+NY,NY-2,179,Single
+NY,NY-2,163,Double
+NY,NY-2,180,Double
+NY,NY-2,183,Double
+NY,NY-2,169,Single
+NY,NY-3,178,Double
+NY,NY-3,175,Double
+NY,NY-3,194,Single
+NY,NY-3,193,Single
+NY,NY-3,186,Single
+NY,NY-3,168,Single
+NY,NY-3,192,Single
+NY,NY-3,191,Double
+NY,NY-3,190,Double
+NY,NY-3,189,Double
+NY,NY-3,188,Double
+NY,NY-3,187,Single
