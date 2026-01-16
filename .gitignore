@@ -47,3 +47,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Basemap API Key
+functions/basemaps_set_defaults.R

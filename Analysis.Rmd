@@ -13,6 +13,8 @@ output:
     code_folding: show
     theme: spacelab
     highlight: tango
+  md_document:
+    variant: gfm
 ---
 
 ```{r setup, message=F}
@@ -191,7 +193,10 @@ styles.group <- c(
 
 ```{r mapAPI, include=FALSE}
 # Obtain your own Static Tiles API key from Mapbox.com first.
-# basemaps::set_defaults(map_service = "mapbox", map_token = "")
+# basemaps::set_defaults(map_service = "mapbox", map_token = "<YOUR API KEY HERE>")
+
+# Retrieve my API key
+source("functions/basemaps_set_defaults.R")
 ```
 
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
