@@ -190,8 +190,8 @@ styles.group <- c(
 #### Figure 1. Map of the Eastern United States indicating the locations of organic apiaries in the states of New York and Pennsylvania
 
 ```{r mapAPI, include=FALSE}
-# REMOVE before publication!!
-basemaps::set_defaults(map_service = "mapbox", map_token = "")
+# Obtain your own Static Tiles API key from Mapbox.com first.
+# basemaps::set_defaults(map_service = "mapbox", map_token = "")
 ```
 
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
