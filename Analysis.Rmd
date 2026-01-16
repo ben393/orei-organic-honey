@@ -9,6 +9,8 @@ author:
  - Margarita M. López-Uribe^[The Pennsylvania State University]
  - Scott McArt^[Cornell University]
 output: 
+  md_document:
+    variant: markdown_github
   html_document:
     code_folding: show
     theme: spacelab
@@ -191,7 +193,7 @@ styles.group <- c(
 
 ```{r mapAPI, include=FALSE}
 # Obtain your own Static Tiles API key from Mapbox.com first.
-# basemaps::set_defaults(map_service = "mapbox", map_token = "")
+basemaps::set_defaults(map_service = "mapbox", map_token = "pk.eyJ1IjoiYmRlbW9yYXMiLCJhIjoiY21pZ3NlOWpxMGFuNDNkcThmdmk5b2lpNCJ9.qZXzdyBN60LF-F-3wbgN1w")
 ```
 
 ```{r fig--1, fig.height=5, fig.width=4, message=FALSE, warning=FALSE}
