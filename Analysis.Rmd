@@ -1,5 +1,5 @@
 ---
-title: "Organic honey production may be possible in the Continental U.S."
+title: "Pesticide contamination in honey from organically managed colonies in the continental U.S. is comparable to certified organic imports"
 subtitle: "Data and analysis"
 author: 
  - Benedict X. DeMoras^[Cornell University, bd379@cornell.edu]
@@ -9,12 +9,12 @@ author:
  - Margarita M. López-Uribe^[The Pennsylvania State University]
  - Scott McArt^[Cornell University]
 output: 
+  md_document:
+    variant: gfm
   html_document:
     code_folding: show
     theme: spacelab
     highlight: tango
-  md_document:
-    variant: gfm
 ---
 
 ```{r setup, message=F}
@@ -23,9 +23,8 @@ library(readxl)         # Import Excel files directly
 library(sf)             # Spatial data
 library(crawlUtils)     # Provides function to expand st_bbox limits
 library(basemaps)       # Downloads base map for ggplot
-# library(usmap)        # US map data
 library(ggspatial)      # Provides lengend scale and north for map
-library(ggrepel)        # geom_text_repel()
+library(ggrepel)        # Adds geom_text_repel function
 library(khroma)         # Colors for heatmap
 library(patchwork)      # Arrange ggplots in grids
 library(ggedit)         # Ability to remove a geom for vis. abstract
@@ -35,8 +34,12 @@ library(performance)    # check_overdispersion
 library(emmeans)        # Pairwise tests
 library(indicspecies)   # Indicator Species Analysis 
 library(vegan)          # For ordinations
+library(ggordiplots)    # For generating ordination plot hulls
+library(colorspace)     # darken() color function
 # devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis) # Pairwise PERMANOVA
+library(units)          # Support units in R vectors, for set_units()
+library(CropScapeR)     # Retrieve CDL Data
 library(MuMIn)          # AICC comparison
 library(ggeffects)      # glmm predictions
 

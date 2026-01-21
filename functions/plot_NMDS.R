@@ -9,9 +9,7 @@ plot_NMDS <- function(MDS,
   # Setup: Libraries -----------------------------------------------------------
   require(ggrepel)      # Adds geom_text_repel function
   require(ggordiplots)  # For generating hulls
-  require(scales)       # provides default ggplot color palette
   require(colorspace)   # darken() color function
-  require(RColorBrewer) # ggplot palettes
 
   # Extracts points
   MDS.pt <- data.frame(MDS$points) %>%
