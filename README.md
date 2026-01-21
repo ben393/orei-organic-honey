@@ -1,6 +1,6 @@
 # Pesticide contamination in honey from organically managed colonies in the continental U.S. is comparable to certified organic imports
 
-[![Zenodo DOI: 18321175](https://zenodo.org/badge/DOI/10.5281/zenodo.18321175.svg)](https://doi.org/10.5281/zenodo.18321175)
+[![Zenodo DOI: 18321610](https://zenodo.org/badge/DOI/10.5281/zenodo.18321610.svg)](https://doi.org/10.5281/zenodo.18321610)
 
 Beekeepers in the continental United States do not have the option of USDA organic certification due to unfeasible apiculture standards. Interim recommendations require more organic-certified land for foraging than is available surrounding most apiaries. To test whether typical organic farms in New York and Pennsylvania (USA) provide sufficient forage for organic honey production, we established 72 colonies using organic management practices on six organic farms in 2023. In 2024, we screened the resulting honey for 96 pesticide residues and tested whether landscape features were associated with pesticide contamination. Additionally, we compared the levels of pesticide contamination to 20 brands of store-bought organic and conventional honey.
 
@@ -21,7 +21,7 @@ Beekeepers in the continental United States do not have the option of USDA organ
 ### Packages
 
 | Package | Version | Purpose |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | `tidyverse` | 2.0.0 | Easier data manipulation and visualization |
 | `readxl` | 1.4.5 | Import Excel files directly into R |
 | `sf` | 1.0-19 | Handle spatial data |
