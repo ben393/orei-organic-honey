@@ -329,7 +329,7 @@ sf.lines <- st_sf(
   theme(plot.caption = element_text(vjust = 0)))
 
 ggsave(
-  "Figure_1.png",
+  "Figure_1.tiff",
   plot = fig.1,
   path = "figures",
   dpi = 500,
@@ -646,7 +646,7 @@ df.fig2.heat <- df.fig2.heat %>%
   styles.heat)
 
 ggsave(
-  "Figure_2.png",
+  "Figure_2.tiff",
   plot = fig.2,
   path = "figures",
   dpi = 500,
@@ -802,7 +802,7 @@ fig.3b <- ggplot(
   plot_annotation(tag_levels = 'A') 
 
 ggsave(
-  "Figure_3.png",
+  "Figure_3.tiff",
   plot = last_plot(),
   path = "figures",
   dpi = 500,
@@ -963,7 +963,7 @@ source("functions/plot_NMDS.R")
 )[[1]])
 
 ggsave(
-  "Figure_4.png",
+  "Figure_4.tiff",
   plot = fig.4,
   path = "figures",
   dpi = 500,
@@ -1086,7 +1086,7 @@ fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
   plot_annotation(tag_levels = 'A'))
 
 ggsave(
-  "Figure_5.png",
+  "Figure_5.tiff",
   plot = last_plot(),
   path = "figures",
   dpi = 500,
@@ -1111,7 +1111,7 @@ ggsave(
   theme(axis.title.x = element_blank()))
 
 ggsave(
-  "Abstract_Fig5B.png",
+  "Abstract_Fig5B.tiff",
   plot = fig.5B.abs,
   path = "figures",
   dpi = 500,
@@ -1529,7 +1529,7 @@ fig.S2A /
   plot_layout(axis_titles = "collect_x")
 
 ggsave(
-  "Supplemental_FigS2.png",
+  "Supplemental_FigS2.tiff",
   plot = last_plot(),
   path = "figures",
   dpi = 500,
