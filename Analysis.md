@@ -6,6 +6,7 @@ library(crawlUtils)     # Provides function to expand st_bbox limits
 library(basemaps)       # Downloads base map for ggplot
 library(ggspatial)      # Provides lengend scale and north for map
 library(ggrepel)        # Adds geom_text_repel function
+library(scales)         # ggplot axis label wrapping
 library(khroma)         # Colors for heatmap
 library(patchwork)      # Arrange ggplots in grids
 library(ggedit)         # Ability to remove a geom for vis. abstract
@@ -181,10 +182,10 @@ styles.classLev <- c(
 )
 styles.groupOrd <- c("OREI", "OG-HI", "OG-IMP", "CNV")
 styles.group <- c(
-  "OREI" = "MNG ORG: New York &\nPennsylvania",
-  "OG-HI" = "ORG: Hawaii",
-  "OG-IMP" = "ORG: Grocery\nImported",
-  "CNV" = "CNV: Grocery"
+  "OREI" = "Organically Managed",
+  "OG-HI" = "Hawaiian Organic",
+  "OG-IMP" = "Imported Organic",
+  "CNV" = "Conventional"
 )
 ```
 
@@ -441,20 +442,20 @@ df.cmpdSumm %>%
   tab_options(table.align = "left")
 ```
 
-<div id="bebseqhojm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#bebseqhojm table {
+<div id="gdvtrvseee" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#gdvtrvseee table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-&#10;#bebseqhojm thead, #bebseqhojm tbody, #bebseqhojm tfoot, #bebseqhojm tr, #bebseqhojm td, #bebseqhojm th {
+&#10;#gdvtrvseee thead, #gdvtrvseee tbody, #gdvtrvseee tfoot, #gdvtrvseee tr, #gdvtrvseee td, #gdvtrvseee th {
   border-style: none;
 }
-&#10;#bebseqhojm p {
+&#10;#gdvtrvseee p {
   margin: 0;
   padding: 0;
 }
-&#10;#bebseqhojm .gt_table {
+&#10;#gdvtrvseee .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -479,11 +480,11 @@ df.cmpdSumm %>%
   border-left-width: 2px;
   border-left-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_caption {
+&#10;#gdvtrvseee .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
-&#10;#bebseqhojm .gt_title {
+&#10;#gdvtrvseee .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -494,7 +495,7 @@ df.cmpdSumm %>%
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
-&#10;#bebseqhojm .gt_subtitle {
+&#10;#gdvtrvseee .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -505,7 +506,7 @@ df.cmpdSumm %>%
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
-&#10;#bebseqhojm .gt_heading {
+&#10;#gdvtrvseee .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -516,12 +517,12 @@ df.cmpdSumm %>%
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_bottom_border {
+&#10;#gdvtrvseee .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_col_headings {
+&#10;#gdvtrvseee .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -535,7 +536,7 @@ df.cmpdSumm %>%
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_col_heading {
+&#10;#gdvtrvseee .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -554,7 +555,7 @@ df.cmpdSumm %>%
   padding-right: 5px;
   overflow-x: hidden;
 }
-&#10;#bebseqhojm .gt_column_spanner_outer {
+&#10;#gdvtrvseee .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -565,13 +566,13 @@ df.cmpdSumm %>%
   padding-left: 4px;
   padding-right: 4px;
 }
-&#10;#bebseqhojm .gt_column_spanner_outer:first-child {
+&#10;#gdvtrvseee .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
-&#10;#bebseqhojm .gt_column_spanner_outer:last-child {
+&#10;#gdvtrvseee .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
-&#10;#bebseqhojm .gt_column_spanner {
+&#10;#gdvtrvseee .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -582,10 +583,10 @@ df.cmpdSumm %>%
   display: inline-block;
   width: 100%;
 }
-&#10;#bebseqhojm .gt_spanner_row {
+&#10;#gdvtrvseee .gt_spanner_row {
   border-bottom-style: hidden;
 }
-&#10;#bebseqhojm .gt_group_heading {
+&#10;#gdvtrvseee .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -610,7 +611,7 @@ df.cmpdSumm %>%
   vertical-align: middle;
   text-align: left;
 }
-&#10;#bebseqhojm .gt_empty_group_heading {
+&#10;#gdvtrvseee .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -624,13 +625,13 @@ df.cmpdSumm %>%
   border-bottom-color: #D3D3D3;
   vertical-align: middle;
 }
-&#10;#bebseqhojm .gt_from_md > :first-child {
+&#10;#gdvtrvseee .gt_from_md > :first-child {
   margin-top: 0;
 }
-&#10;#bebseqhojm .gt_from_md > :last-child {
+&#10;#gdvtrvseee .gt_from_md > :last-child {
   margin-bottom: 0;
 }
-&#10;#bebseqhojm .gt_row {
+&#10;#gdvtrvseee .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -648,7 +649,7 @@ df.cmpdSumm %>%
   vertical-align: middle;
   overflow-x: hidden;
 }
-&#10;#bebseqhojm .gt_stub {
+&#10;#gdvtrvseee .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -660,7 +661,7 @@ df.cmpdSumm %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#bebseqhojm .gt_stub_row_group {
+&#10;#gdvtrvseee .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -673,13 +674,13 @@ df.cmpdSumm %>%
   padding-right: 5px;
   vertical-align: top;
 }
-&#10;#bebseqhojm .gt_row_group_first td {
+&#10;#gdvtrvseee .gt_row_group_first td {
   border-top-width: 2px;
 }
-&#10;#bebseqhojm .gt_row_group_first th {
+&#10;#gdvtrvseee .gt_row_group_first th {
   border-top-width: 2px;
 }
-&#10;#bebseqhojm .gt_summary_row {
+&#10;#gdvtrvseee .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -688,14 +689,14 @@ df.cmpdSumm %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#bebseqhojm .gt_first_summary_row {
+&#10;#gdvtrvseee .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_first_summary_row.thick {
+&#10;#gdvtrvseee .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
-&#10;#bebseqhojm .gt_last_summary_row {
+&#10;#gdvtrvseee .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -704,7 +705,7 @@ df.cmpdSumm %>%
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_grand_summary_row {
+&#10;#gdvtrvseee .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -713,7 +714,7 @@ df.cmpdSumm %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#bebseqhojm .gt_first_grand_summary_row {
+&#10;#gdvtrvseee .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -722,7 +723,7 @@ df.cmpdSumm %>%
   border-top-width: 6px;
   border-top-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_last_grand_summary_row_top {
+&#10;#gdvtrvseee .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -731,10 +732,10 @@ df.cmpdSumm %>%
   border-bottom-width: 6px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_striped {
+&#10;#gdvtrvseee .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
-&#10;#bebseqhojm .gt_table_body {
+&#10;#gdvtrvseee .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -742,7 +743,7 @@ df.cmpdSumm %>%
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_footnotes {
+&#10;#gdvtrvseee .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -755,7 +756,7 @@ df.cmpdSumm %>%
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_footnote {
+&#10;#gdvtrvseee .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -763,7 +764,7 @@ df.cmpdSumm %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#bebseqhojm .gt_sourcenotes {
+&#10;#gdvtrvseee .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -776,64 +777,64 @@ df.cmpdSumm %>%
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#bebseqhojm .gt_sourcenote {
+&#10;#gdvtrvseee .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#bebseqhojm .gt_left {
+&#10;#gdvtrvseee .gt_left {
   text-align: left;
 }
-&#10;#bebseqhojm .gt_center {
+&#10;#gdvtrvseee .gt_center {
   text-align: center;
 }
-&#10;#bebseqhojm .gt_right {
+&#10;#gdvtrvseee .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-&#10;#bebseqhojm .gt_font_normal {
+&#10;#gdvtrvseee .gt_font_normal {
   font-weight: normal;
 }
-&#10;#bebseqhojm .gt_font_bold {
+&#10;#gdvtrvseee .gt_font_bold {
   font-weight: bold;
 }
-&#10;#bebseqhojm .gt_font_italic {
+&#10;#gdvtrvseee .gt_font_italic {
   font-style: italic;
 }
-&#10;#bebseqhojm .gt_super {
+&#10;#gdvtrvseee .gt_super {
   font-size: 65%;
 }
-&#10;#bebseqhojm .gt_footnote_marks {
+&#10;#gdvtrvseee .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
-&#10;#bebseqhojm .gt_asterisk {
+&#10;#gdvtrvseee .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
-&#10;#bebseqhojm .gt_indent_1 {
+&#10;#gdvtrvseee .gt_indent_1 {
   text-indent: 5px;
 }
-&#10;#bebseqhojm .gt_indent_2 {
+&#10;#gdvtrvseee .gt_indent_2 {
   text-indent: 10px;
 }
-&#10;#bebseqhojm .gt_indent_3 {
+&#10;#gdvtrvseee .gt_indent_3 {
   text-indent: 15px;
 }
-&#10;#bebseqhojm .gt_indent_4 {
+&#10;#gdvtrvseee .gt_indent_4 {
   text-indent: 20px;
 }
-&#10;#bebseqhojm .gt_indent_5 {
+&#10;#gdvtrvseee .gt_indent_5 {
   text-indent: 25px;
 }
-&#10;#bebseqhojm .katex-display {
+&#10;#gdvtrvseee .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
-&#10;#bebseqhojm div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+&#10;#gdvtrvseee div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1859,10 +1860,10 @@ bind_rows(
   mutate(
     "Type of honey" = case_match(
       Group,
-      "OREI" ~ "MNG ORG: New York & Pennsylvania",
-      "OG-HI" ~ "ORG: Hawaii",
-      "OG-IMP" ~ "ORG: Grocery Imported",
-      "CNV" ~ "CNV: Grocery",
+      "OREI" ~ "Organically Managed",
+      "OG-HI" ~ "Hawaiian Organic",
+      "OG-IMP" ~ "Imported Organic",
+      "CNV" ~ "Conventional",
       .default = Group
     ),
     .keep = "unused",
@@ -1892,20 +1893,20 @@ bind_rows(
   tab_options(table.align = "left")
 ```
 
-<div id="xztvbhwlqe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#xztvbhwlqe table {
+<div id="qploiglkfu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qploiglkfu table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-&#10;#xztvbhwlqe thead, #xztvbhwlqe tbody, #xztvbhwlqe tfoot, #xztvbhwlqe tr, #xztvbhwlqe td, #xztvbhwlqe th {
+&#10;#qploiglkfu thead, #qploiglkfu tbody, #qploiglkfu tfoot, #qploiglkfu tr, #qploiglkfu td, #qploiglkfu th {
   border-style: none;
 }
-&#10;#xztvbhwlqe p {
+&#10;#qploiglkfu p {
   margin: 0;
   padding: 0;
 }
-&#10;#xztvbhwlqe .gt_table {
+&#10;#qploiglkfu .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1930,11 +1931,11 @@ bind_rows(
   border-left-width: 2px;
   border-left-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_caption {
+&#10;#qploiglkfu .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
-&#10;#xztvbhwlqe .gt_title {
+&#10;#qploiglkfu .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1945,7 +1946,7 @@ bind_rows(
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
-&#10;#xztvbhwlqe .gt_subtitle {
+&#10;#qploiglkfu .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1956,7 +1957,7 @@ bind_rows(
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
-&#10;#xztvbhwlqe .gt_heading {
+&#10;#qploiglkfu .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1967,12 +1968,12 @@ bind_rows(
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_bottom_border {
+&#10;#qploiglkfu .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_col_headings {
+&#10;#qploiglkfu .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1986,7 +1987,7 @@ bind_rows(
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_col_heading {
+&#10;#qploiglkfu .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2005,7 +2006,7 @@ bind_rows(
   padding-right: 5px;
   overflow-x: hidden;
 }
-&#10;#xztvbhwlqe .gt_column_spanner_outer {
+&#10;#qploiglkfu .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2016,13 +2017,13 @@ bind_rows(
   padding-left: 4px;
   padding-right: 4px;
 }
-&#10;#xztvbhwlqe .gt_column_spanner_outer:first-child {
+&#10;#qploiglkfu .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
-&#10;#xztvbhwlqe .gt_column_spanner_outer:last-child {
+&#10;#qploiglkfu .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
-&#10;#xztvbhwlqe .gt_column_spanner {
+&#10;#qploiglkfu .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2033,10 +2034,10 @@ bind_rows(
   display: inline-block;
   width: 100%;
 }
-&#10;#xztvbhwlqe .gt_spanner_row {
+&#10;#qploiglkfu .gt_spanner_row {
   border-bottom-style: hidden;
 }
-&#10;#xztvbhwlqe .gt_group_heading {
+&#10;#qploiglkfu .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2061,7 +2062,7 @@ bind_rows(
   vertical-align: middle;
   text-align: left;
 }
-&#10;#xztvbhwlqe .gt_empty_group_heading {
+&#10;#qploiglkfu .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2075,13 +2076,13 @@ bind_rows(
   border-bottom-color: #D3D3D3;
   vertical-align: middle;
 }
-&#10;#xztvbhwlqe .gt_from_md > :first-child {
+&#10;#qploiglkfu .gt_from_md > :first-child {
   margin-top: 0;
 }
-&#10;#xztvbhwlqe .gt_from_md > :last-child {
+&#10;#qploiglkfu .gt_from_md > :last-child {
   margin-bottom: 0;
 }
-&#10;#xztvbhwlqe .gt_row {
+&#10;#qploiglkfu .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2099,7 +2100,7 @@ bind_rows(
   vertical-align: middle;
   overflow-x: hidden;
 }
-&#10;#xztvbhwlqe .gt_stub {
+&#10;#qploiglkfu .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2111,7 +2112,7 @@ bind_rows(
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#xztvbhwlqe .gt_stub_row_group {
+&#10;#qploiglkfu .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2124,13 +2125,13 @@ bind_rows(
   padding-right: 5px;
   vertical-align: top;
 }
-&#10;#xztvbhwlqe .gt_row_group_first td {
+&#10;#qploiglkfu .gt_row_group_first td {
   border-top-width: 2px;
 }
-&#10;#xztvbhwlqe .gt_row_group_first th {
+&#10;#qploiglkfu .gt_row_group_first th {
   border-top-width: 2px;
 }
-&#10;#xztvbhwlqe .gt_summary_row {
+&#10;#qploiglkfu .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2139,14 +2140,14 @@ bind_rows(
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#xztvbhwlqe .gt_first_summary_row {
+&#10;#qploiglkfu .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_first_summary_row.thick {
+&#10;#qploiglkfu .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
-&#10;#xztvbhwlqe .gt_last_summary_row {
+&#10;#qploiglkfu .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2155,7 +2156,7 @@ bind_rows(
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_grand_summary_row {
+&#10;#qploiglkfu .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2164,7 +2165,7 @@ bind_rows(
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#xztvbhwlqe .gt_first_grand_summary_row {
+&#10;#qploiglkfu .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2173,7 +2174,7 @@ bind_rows(
   border-top-width: 6px;
   border-top-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_last_grand_summary_row_top {
+&#10;#qploiglkfu .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2182,10 +2183,10 @@ bind_rows(
   border-bottom-width: 6px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_striped {
+&#10;#qploiglkfu .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
-&#10;#xztvbhwlqe .gt_table_body {
+&#10;#qploiglkfu .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2193,7 +2194,7 @@ bind_rows(
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_footnotes {
+&#10;#qploiglkfu .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2206,7 +2207,7 @@ bind_rows(
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_footnote {
+&#10;#qploiglkfu .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2214,7 +2215,7 @@ bind_rows(
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#xztvbhwlqe .gt_sourcenotes {
+&#10;#qploiglkfu .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2227,64 +2228,64 @@ bind_rows(
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#xztvbhwlqe .gt_sourcenote {
+&#10;#qploiglkfu .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#xztvbhwlqe .gt_left {
+&#10;#qploiglkfu .gt_left {
   text-align: left;
 }
-&#10;#xztvbhwlqe .gt_center {
+&#10;#qploiglkfu .gt_center {
   text-align: center;
 }
-&#10;#xztvbhwlqe .gt_right {
+&#10;#qploiglkfu .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-&#10;#xztvbhwlqe .gt_font_normal {
+&#10;#qploiglkfu .gt_font_normal {
   font-weight: normal;
 }
-&#10;#xztvbhwlqe .gt_font_bold {
+&#10;#qploiglkfu .gt_font_bold {
   font-weight: bold;
 }
-&#10;#xztvbhwlqe .gt_font_italic {
+&#10;#qploiglkfu .gt_font_italic {
   font-style: italic;
 }
-&#10;#xztvbhwlqe .gt_super {
+&#10;#qploiglkfu .gt_super {
   font-size: 65%;
 }
-&#10;#xztvbhwlqe .gt_footnote_marks {
+&#10;#qploiglkfu .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
-&#10;#xztvbhwlqe .gt_asterisk {
+&#10;#qploiglkfu .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
-&#10;#xztvbhwlqe .gt_indent_1 {
+&#10;#qploiglkfu .gt_indent_1 {
   text-indent: 5px;
 }
-&#10;#xztvbhwlqe .gt_indent_2 {
+&#10;#qploiglkfu .gt_indent_2 {
   text-indent: 10px;
 }
-&#10;#xztvbhwlqe .gt_indent_3 {
+&#10;#qploiglkfu .gt_indent_3 {
   text-indent: 15px;
 }
-&#10;#xztvbhwlqe .gt_indent_4 {
+&#10;#qploiglkfu .gt_indent_4 {
   text-indent: 20px;
 }
-&#10;#xztvbhwlqe .gt_indent_5 {
+&#10;#qploiglkfu .gt_indent_5 {
   text-indent: 25px;
 }
-&#10;#xztvbhwlqe .katex-display {
+&#10;#qploiglkfu .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
-&#10;#xztvbhwlqe div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+&#10;#qploiglkfu div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -2312,7 +2313,7 @@ bind_rows(
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td headers="Type of honey" class="gt_row gt_left">MNG ORG: New York &amp; Pennsylvania</td>
+    <tr><td headers="Type of honey" class="gt_row gt_left">Organically Managed</td>
 <td headers="Cmpds" class="gt_row gt_right">8</td>
 <td headers="sum.mean" class="gt_row gt_right">1.2</td>
 <td headers="sum.se" class="gt_row gt_right">0.28</td>
@@ -2322,7 +2323,7 @@ bind_rows(
 <td headers="N.se" class="gt_row gt_right">0.1</td>
 <td headers="N.min" class="gt_row gt_right">0</td>
 <td headers="N.max" class="gt_row gt_right">3</td></tr>
-    <tr><td headers="Type of honey" class="gt_row gt_left">ORG: Hawaii</td>
+    <tr><td headers="Type of honey" class="gt_row gt_left">Hawaiian Organic</td>
 <td headers="Cmpds" class="gt_row gt_right">4</td>
 <td headers="sum.mean" class="gt_row gt_right">5.18</td>
 <td headers="sum.se" class="gt_row gt_right">1.23</td>
@@ -2332,7 +2333,7 @@ bind_rows(
 <td headers="N.se" class="gt_row gt_right">0.1</td>
 <td headers="N.min" class="gt_row gt_right">0</td>
 <td headers="N.max" class="gt_row gt_right">2</td></tr>
-    <tr><td headers="Type of honey" class="gt_row gt_left">ORG: Grocery Imported</td>
+    <tr><td headers="Type of honey" class="gt_row gt_left">Imported Organic</td>
 <td headers="Cmpds" class="gt_row gt_right">4</td>
 <td headers="sum.mean" class="gt_row gt_right">2.72</td>
 <td headers="sum.se" class="gt_row gt_right">0.35</td>
@@ -2342,7 +2343,7 @@ bind_rows(
 <td headers="N.se" class="gt_row gt_right">0.1</td>
 <td headers="N.min" class="gt_row gt_right">1</td>
 <td headers="N.max" class="gt_row gt_right">2</td></tr>
-    <tr><td headers="Type of honey" class="gt_row gt_left">CNV: Grocery</td>
+    <tr><td headers="Type of honey" class="gt_row gt_left">Conventional</td>
 <td headers="Cmpds" class="gt_row gt_right">11</td>
 <td headers="sum.mean" class="gt_row gt_right">9.34</td>
 <td headers="sum.se" class="gt_row gt_right">1.68</td>
@@ -2375,7 +2376,7 @@ rm(summTab)
 
 ``` r
 # Build styles for plot -------------------------------------------------------------
-colors.heat <- c("grey42", color("lajolla")(49))
+colors.heat <- c("grey42", rev(color("lajolla")(49)))
 colors.tols <- c(
   "Yes" = color("lajolla")(3)[2],
   "No" = "grey80",
@@ -2415,7 +2416,10 @@ df.fig2.heat <- df.fig2.heat %>%
     Class.Pest ~ Group,
     scales = "free",
     space = "free",
-    labeller = labeller(Group = styles.group)
+    labeller = labeller(
+      # Wrap the Group facet labels at 13 characters
+      Group = setNames(str_wrap(styles.group, width = 13), names(styles.group))
+    )
   ) +
   scale_fill_gradientn(
     name = "Concentration\n(ppb)", # Title of the scale
@@ -2713,20 +2717,20 @@ df.fig2.heat %>%
   tab_options(table.align = "left")
 ```
 
-<div id="oxwucennwo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#oxwucennwo table {
+<div id="jikybpntke" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jikybpntke table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-&#10;#oxwucennwo thead, #oxwucennwo tbody, #oxwucennwo tfoot, #oxwucennwo tr, #oxwucennwo td, #oxwucennwo th {
+&#10;#jikybpntke thead, #jikybpntke tbody, #jikybpntke tfoot, #jikybpntke tr, #jikybpntke td, #jikybpntke th {
   border-style: none;
 }
-&#10;#oxwucennwo p {
+&#10;#jikybpntke p {
   margin: 0;
   padding: 0;
 }
-&#10;#oxwucennwo .gt_table {
+&#10;#jikybpntke .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2751,11 +2755,11 @@ df.fig2.heat %>%
   border-left-width: 2px;
   border-left-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_caption {
+&#10;#jikybpntke .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
-&#10;#oxwucennwo .gt_title {
+&#10;#jikybpntke .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2766,7 +2770,7 @@ df.fig2.heat %>%
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
-&#10;#oxwucennwo .gt_subtitle {
+&#10;#jikybpntke .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2777,7 +2781,7 @@ df.fig2.heat %>%
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
-&#10;#oxwucennwo .gt_heading {
+&#10;#jikybpntke .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2788,12 +2792,12 @@ df.fig2.heat %>%
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_bottom_border {
+&#10;#jikybpntke .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_col_headings {
+&#10;#jikybpntke .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2807,7 +2811,7 @@ df.fig2.heat %>%
   border-right-width: 1px;
   border-right-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_col_heading {
+&#10;#jikybpntke .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2826,7 +2830,7 @@ df.fig2.heat %>%
   padding-right: 5px;
   overflow-x: hidden;
 }
-&#10;#oxwucennwo .gt_column_spanner_outer {
+&#10;#jikybpntke .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2837,13 +2841,13 @@ df.fig2.heat %>%
   padding-left: 4px;
   padding-right: 4px;
 }
-&#10;#oxwucennwo .gt_column_spanner_outer:first-child {
+&#10;#jikybpntke .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
-&#10;#oxwucennwo .gt_column_spanner_outer:last-child {
+&#10;#jikybpntke .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
-&#10;#oxwucennwo .gt_column_spanner {
+&#10;#jikybpntke .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2854,10 +2858,10 @@ df.fig2.heat %>%
   display: inline-block;
   width: 100%;
 }
-&#10;#oxwucennwo .gt_spanner_row {
+&#10;#jikybpntke .gt_spanner_row {
   border-bottom-style: hidden;
 }
-&#10;#oxwucennwo .gt_group_heading {
+&#10;#jikybpntke .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2882,7 +2886,7 @@ df.fig2.heat %>%
   vertical-align: middle;
   text-align: left;
 }
-&#10;#oxwucennwo .gt_empty_group_heading {
+&#10;#jikybpntke .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2896,13 +2900,13 @@ df.fig2.heat %>%
   border-bottom-color: #D3D3D3;
   vertical-align: middle;
 }
-&#10;#oxwucennwo .gt_from_md > :first-child {
+&#10;#jikybpntke .gt_from_md > :first-child {
   margin-top: 0;
 }
-&#10;#oxwucennwo .gt_from_md > :last-child {
+&#10;#jikybpntke .gt_from_md > :last-child {
   margin-bottom: 0;
 }
-&#10;#oxwucennwo .gt_row {
+&#10;#jikybpntke .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2920,7 +2924,7 @@ df.fig2.heat %>%
   vertical-align: middle;
   overflow-x: hidden;
 }
-&#10;#oxwucennwo .gt_stub {
+&#10;#jikybpntke .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2932,7 +2936,7 @@ df.fig2.heat %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#oxwucennwo .gt_stub_row_group {
+&#10;#jikybpntke .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2945,13 +2949,13 @@ df.fig2.heat %>%
   padding-right: 5px;
   vertical-align: top;
 }
-&#10;#oxwucennwo .gt_row_group_first td {
+&#10;#jikybpntke .gt_row_group_first td {
   border-top-width: 2px;
 }
-&#10;#oxwucennwo .gt_row_group_first th {
+&#10;#jikybpntke .gt_row_group_first th {
   border-top-width: 2px;
 }
-&#10;#oxwucennwo .gt_summary_row {
+&#10;#jikybpntke .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2960,14 +2964,14 @@ df.fig2.heat %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#oxwucennwo .gt_first_summary_row {
+&#10;#jikybpntke .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_first_summary_row.thick {
+&#10;#jikybpntke .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
-&#10;#oxwucennwo .gt_last_summary_row {
+&#10;#jikybpntke .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2976,7 +2980,7 @@ df.fig2.heat %>%
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_grand_summary_row {
+&#10;#jikybpntke .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2985,7 +2989,7 @@ df.fig2.heat %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#oxwucennwo .gt_first_grand_summary_row {
+&#10;#jikybpntke .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2994,7 +2998,7 @@ df.fig2.heat %>%
   border-top-width: 6px;
   border-top-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_last_grand_summary_row_top {
+&#10;#jikybpntke .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3003,10 +3007,10 @@ df.fig2.heat %>%
   border-bottom-width: 6px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_striped {
+&#10;#jikybpntke .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
-&#10;#oxwucennwo .gt_table_body {
+&#10;#jikybpntke .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3014,7 +3018,7 @@ df.fig2.heat %>%
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_footnotes {
+&#10;#jikybpntke .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3027,7 +3031,7 @@ df.fig2.heat %>%
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_footnote {
+&#10;#jikybpntke .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3035,7 +3039,7 @@ df.fig2.heat %>%
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#oxwucennwo .gt_sourcenotes {
+&#10;#jikybpntke .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3048,64 +3052,64 @@ df.fig2.heat %>%
   border-right-width: 2px;
   border-right-color: #D3D3D3;
 }
-&#10;#oxwucennwo .gt_sourcenote {
+&#10;#jikybpntke .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
-&#10;#oxwucennwo .gt_left {
+&#10;#jikybpntke .gt_left {
   text-align: left;
 }
-&#10;#oxwucennwo .gt_center {
+&#10;#jikybpntke .gt_center {
   text-align: center;
 }
-&#10;#oxwucennwo .gt_right {
+&#10;#jikybpntke .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-&#10;#oxwucennwo .gt_font_normal {
+&#10;#jikybpntke .gt_font_normal {
   font-weight: normal;
 }
-&#10;#oxwucennwo .gt_font_bold {
+&#10;#jikybpntke .gt_font_bold {
   font-weight: bold;
 }
-&#10;#oxwucennwo .gt_font_italic {
+&#10;#jikybpntke .gt_font_italic {
   font-style: italic;
 }
-&#10;#oxwucennwo .gt_super {
+&#10;#jikybpntke .gt_super {
   font-size: 65%;
 }
-&#10;#oxwucennwo .gt_footnote_marks {
+&#10;#jikybpntke .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
-&#10;#oxwucennwo .gt_asterisk {
+&#10;#jikybpntke .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
-&#10;#oxwucennwo .gt_indent_1 {
+&#10;#jikybpntke .gt_indent_1 {
   text-indent: 5px;
 }
-&#10;#oxwucennwo .gt_indent_2 {
+&#10;#jikybpntke .gt_indent_2 {
   text-indent: 10px;
 }
-&#10;#oxwucennwo .gt_indent_3 {
+&#10;#jikybpntke .gt_indent_3 {
   text-indent: 15px;
 }
-&#10;#oxwucennwo .gt_indent_4 {
+&#10;#jikybpntke .gt_indent_4 {
   text-indent: 20px;
 }
-&#10;#oxwucennwo .gt_indent_5 {
+&#10;#jikybpntke .gt_indent_5 {
   text-indent: 25px;
 }
-&#10;#oxwucennwo .katex-display {
+&#10;#jikybpntke .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
-&#10;#oxwucennwo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+&#10;#jikybpntke div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -3133,358 +3137,260 @@ df.fig2.heat %>%
   </thead>
   <tbody class="gt_table_body">
     <tr class="gt_group_heading_row">
-      <th colspan="9" class="gt_group_heading" scope="colgroup" id="MNG ORG: New York &amp;amp;&#10;Pennsylvania">MNG ORG: New York &amp;
-Pennsylvania</th>
+      <th colspan="9" class="gt_group_heading" scope="colgroup" id="Organically Managed">Organically Managed</th>
     </tr>
     <tr class="gt_row_group_first"><th id="stub_1_1" scope="row" class="gt_row gt_center gt_stub">Piperonyl butoxide</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 Class.Pest" class="gt_row gt_center">Syn.</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 n.exceedTol" class="gt_row gt_right">1</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 n.detects" class="gt_row gt_right">30</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 pct.detect" class="gt_row gt_right">53.6%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 mean" class="gt_row gt_right">0.94</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 se" class="gt_row gt_right">0.27</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_1 max" class="gt_row gt_right">10.69</td></tr>
+<td headers="Organically Managed stub_1_1 Class.Pest" class="gt_row gt_center">Syn.</td>
+<td headers="Organically Managed stub_1_1 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_1 n.exceedTol" class="gt_row gt_right">1</td>
+<td headers="Organically Managed stub_1_1 n.detects" class="gt_row gt_right">30</td>
+<td headers="Organically Managed stub_1_1 pct.detect" class="gt_row gt_right">53.6%</td>
+<td headers="Organically Managed stub_1_1 mean" class="gt_row gt_right">0.94</td>
+<td headers="Organically Managed stub_1_1 se" class="gt_row gt_right">0.27</td>
+<td headers="Organically Managed stub_1_1 max" class="gt_row gt_right">10.69</td></tr>
     <tr><th id="stub_1_2" scope="row" class="gt_row gt_center gt_stub">Coumaphos oxon</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 MRL.OG.ppb" class="gt_row gt_right">7.5</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 n.detects" class="gt_row gt_right">10</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 pct.detect" class="gt_row gt_right">17.9%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 mean" class="gt_row gt_right">0.08</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 se" class="gt_row gt_right">0.03</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_2 max" class="gt_row gt_right">1.32</td></tr>
+<td headers="Organically Managed stub_1_2 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Organically Managed stub_1_2 MRL.OG.ppb" class="gt_row gt_right">7.5</td>
+<td headers="Organically Managed stub_1_2 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_2 n.detects" class="gt_row gt_right">10</td>
+<td headers="Organically Managed stub_1_2 pct.detect" class="gt_row gt_right">17.9%</td>
+<td headers="Organically Managed stub_1_2 mean" class="gt_row gt_right">0.08</td>
+<td headers="Organically Managed stub_1_2 se" class="gt_row gt_right">0.03</td>
+<td headers="Organically Managed stub_1_2 max" class="gt_row gt_right">1.32</td></tr>
     <tr><th id="stub_1_3" scope="row" class="gt_row gt_center gt_stub">(E)-Fenpyroximate</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 Class.Pest" class="gt_row gt_center">Insecticide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 n.detects" class="gt_row gt_right">6</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 pct.detect" class="gt_row gt_right">10.7%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 mean" class="gt_row gt_right">0.03</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 se" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_3 max" class="gt_row gt_right">0.69</td></tr>
+<td headers="Organically Managed stub_1_3 Class.Pest" class="gt_row gt_center">Insecticide</td>
+<td headers="Organically Managed stub_1_3 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_3 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_3 n.detects" class="gt_row gt_right">6</td>
+<td headers="Organically Managed stub_1_3 pct.detect" class="gt_row gt_right">10.7%</td>
+<td headers="Organically Managed stub_1_3 mean" class="gt_row gt_right">0.03</td>
+<td headers="Organically Managed stub_1_3 se" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_3 max" class="gt_row gt_right">0.69</td></tr>
     <tr><th id="stub_1_4" scope="row" class="gt_row gt_center gt_stub">Tebuthiuron</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 n.detects" class="gt_row gt_right">6</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 pct.detect" class="gt_row gt_right">10.7%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 mean" class="gt_row gt_right">0.03</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 se" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_4 max" class="gt_row gt_right">0.68</td></tr>
+<td headers="Organically Managed stub_1_4 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Organically Managed stub_1_4 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_4 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_4 n.detects" class="gt_row gt_right">6</td>
+<td headers="Organically Managed stub_1_4 pct.detect" class="gt_row gt_right">10.7%</td>
+<td headers="Organically Managed stub_1_4 mean" class="gt_row gt_right">0.03</td>
+<td headers="Organically Managed stub_1_4 se" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_4 max" class="gt_row gt_right">0.68</td></tr>
     <tr><th id="stub_1_5" scope="row" class="gt_row gt_center gt_stub">Azoxystrobin</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 n.detects" class="gt_row gt_right">5</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 pct.detect" class="gt_row gt_right">8.9%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 mean" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 se" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_5 max" class="gt_row gt_right">0.31</td></tr>
+<td headers="Organically Managed stub_1_5 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Organically Managed stub_1_5 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_5 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_5 n.detects" class="gt_row gt_right">5</td>
+<td headers="Organically Managed stub_1_5 pct.detect" class="gt_row gt_right">8.9%</td>
+<td headers="Organically Managed stub_1_5 mean" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_5 se" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_5 max" class="gt_row gt_right">0.31</td></tr>
     <tr><th id="stub_1_6" scope="row" class="gt_row gt_center gt_stub">Atrazine</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 n.detects" class="gt_row gt_right">1</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 pct.detect" class="gt_row gt_right">1.8%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 mean" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 se" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_6 max" class="gt_row gt_right">0.42</td></tr>
+<td headers="Organically Managed stub_1_6 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Organically Managed stub_1_6 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_6 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_6 n.detects" class="gt_row gt_right">1</td>
+<td headers="Organically Managed stub_1_6 pct.detect" class="gt_row gt_right">1.8%</td>
+<td headers="Organically Managed stub_1_6 mean" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_6 se" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_6 max" class="gt_row gt_right">0.42</td></tr>
     <tr><th id="stub_1_7" scope="row" class="gt_row gt_center gt_stub">Coumaphos</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 MRL.OG.ppb" class="gt_row gt_right">7.5</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 n.detects" class="gt_row gt_right">1</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 pct.detect" class="gt_row gt_right">1.8%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 mean" class="gt_row gt_right">0.08</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 se" class="gt_row gt_right">0.08</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_7 max" class="gt_row gt_right">4.71</td></tr>
+<td headers="Organically Managed stub_1_7 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Organically Managed stub_1_7 MRL.OG.ppb" class="gt_row gt_right">7.5</td>
+<td headers="Organically Managed stub_1_7 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_7 n.detects" class="gt_row gt_right">1</td>
+<td headers="Organically Managed stub_1_7 pct.detect" class="gt_row gt_right">1.8%</td>
+<td headers="Organically Managed stub_1_7 mean" class="gt_row gt_right">0.08</td>
+<td headers="Organically Managed stub_1_7 se" class="gt_row gt_right">0.08</td>
+<td headers="Organically Managed stub_1_7 max" class="gt_row gt_right">4.71</td></tr>
     <tr><th id="stub_1_8" scope="row" class="gt_row gt_center gt_stub">Tebufenozide</th>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 Class.Pest" class="gt_row gt_center">Insecticide</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 n.detects" class="gt_row gt_right">1</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 pct.detect" class="gt_row gt_right">1.8%</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 mean" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 se" class="gt_row gt_right">0.01</td>
-<td headers="MNG ORG: New York &
-Pennsylvania stub_1_8 max" class="gt_row gt_right">0.42</td></tr>
+<td headers="Organically Managed stub_1_8 Class.Pest" class="gt_row gt_center">Insecticide</td>
+<td headers="Organically Managed stub_1_8 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Organically Managed stub_1_8 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Organically Managed stub_1_8 n.detects" class="gt_row gt_right">1</td>
+<td headers="Organically Managed stub_1_8 pct.detect" class="gt_row gt_right">1.8%</td>
+<td headers="Organically Managed stub_1_8 mean" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_8 se" class="gt_row gt_right">0.01</td>
+<td headers="Organically Managed stub_1_8 max" class="gt_row gt_right">0.42</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="9" class="gt_group_heading" scope="colgroup" id="ORG: Hawaii">ORG: Hawaii</th>
+      <th colspan="9" class="gt_group_heading" scope="colgroup" id="Hawaiian Organic">Hawaiian Organic</th>
     </tr>
     <tr class="gt_row_group_first"><th id="stub_1_9" scope="row" class="gt_row gt_center gt_stub">2,4-DMA</th>
-<td headers="ORG: Hawaii stub_1_9 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="ORG: Hawaii stub_1_9 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Hawaii stub_1_9 n.exceedTol" class="gt_row gt_right">9</td>
-<td headers="ORG: Hawaii stub_1_9 n.detects" class="gt_row gt_right">10</td>
-<td headers="ORG: Hawaii stub_1_9 pct.detect" class="gt_row gt_right">33.3%</td>
-<td headers="ORG: Hawaii stub_1_9 mean" class="gt_row gt_right">4.47</td>
-<td headers="ORG: Hawaii stub_1_9 se" class="gt_row gt_right">1.25</td>
-<td headers="ORG: Hawaii stub_1_9 max" class="gt_row gt_right">16.67</td></tr>
+<td headers="Hawaiian Organic stub_1_9 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Hawaiian Organic stub_1_9 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Hawaiian Organic stub_1_9 n.exceedTol" class="gt_row gt_right">9</td>
+<td headers="Hawaiian Organic stub_1_9 n.detects" class="gt_row gt_right">10</td>
+<td headers="Hawaiian Organic stub_1_9 pct.detect" class="gt_row gt_right">33.3%</td>
+<td headers="Hawaiian Organic stub_1_9 mean" class="gt_row gt_right">4.47</td>
+<td headers="Hawaiian Organic stub_1_9 se" class="gt_row gt_right">1.25</td>
+<td headers="Hawaiian Organic stub_1_9 max" class="gt_row gt_right">16.67</td></tr>
     <tr><th id="stub_1_10" scope="row" class="gt_row gt_center gt_stub">Piperonyl butoxide</th>
-<td headers="ORG: Hawaii stub_1_10 Class.Pest" class="gt_row gt_center">Syn.</td>
-<td headers="ORG: Hawaii stub_1_10 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Hawaii stub_1_10 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Hawaii stub_1_10 n.detects" class="gt_row gt_right">4</td>
-<td headers="ORG: Hawaii stub_1_10 pct.detect" class="gt_row gt_right">13.3%</td>
-<td headers="ORG: Hawaii stub_1_10 mean" class="gt_row gt_right">0.01</td>
-<td headers="ORG: Hawaii stub_1_10 se" class="gt_row gt_right">0.00</td>
-<td headers="ORG: Hawaii stub_1_10 max" class="gt_row gt_right">0.05</td></tr>
+<td headers="Hawaiian Organic stub_1_10 Class.Pest" class="gt_row gt_center">Syn.</td>
+<td headers="Hawaiian Organic stub_1_10 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Hawaiian Organic stub_1_10 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Hawaiian Organic stub_1_10 n.detects" class="gt_row gt_right">4</td>
+<td headers="Hawaiian Organic stub_1_10 pct.detect" class="gt_row gt_right">13.3%</td>
+<td headers="Hawaiian Organic stub_1_10 mean" class="gt_row gt_right">0.01</td>
+<td headers="Hawaiian Organic stub_1_10 se" class="gt_row gt_right">0.00</td>
+<td headers="Hawaiian Organic stub_1_10 max" class="gt_row gt_right">0.05</td></tr>
     <tr><th id="stub_1_11" scope="row" class="gt_row gt_center gt_stub">2,4-DMPF</th>
-<td headers="ORG: Hawaii stub_1_11 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="ORG: Hawaii stub_1_11 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Hawaii stub_1_11 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Hawaii stub_1_11 n.detects" class="gt_row gt_right">3</td>
-<td headers="ORG: Hawaii stub_1_11 pct.detect" class="gt_row gt_right">10.0%</td>
-<td headers="ORG: Hawaii stub_1_11 mean" class="gt_row gt_right">0.70</td>
-<td headers="ORG: Hawaii stub_1_11 se" class="gt_row gt_right">0.40</td>
-<td headers="ORG: Hawaii stub_1_11 max" class="gt_row gt_right">8.05</td></tr>
+<td headers="Hawaiian Organic stub_1_11 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Hawaiian Organic stub_1_11 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Hawaiian Organic stub_1_11 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Hawaiian Organic stub_1_11 n.detects" class="gt_row gt_right">3</td>
+<td headers="Hawaiian Organic stub_1_11 pct.detect" class="gt_row gt_right">10.0%</td>
+<td headers="Hawaiian Organic stub_1_11 mean" class="gt_row gt_right">0.70</td>
+<td headers="Hawaiian Organic stub_1_11 se" class="gt_row gt_right">0.40</td>
+<td headers="Hawaiian Organic stub_1_11 max" class="gt_row gt_right">8.05</td></tr>
     <tr><th id="stub_1_12" scope="row" class="gt_row gt_center gt_stub">Metolachlor</th>
-<td headers="ORG: Hawaii stub_1_12 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="ORG: Hawaii stub_1_12 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Hawaii stub_1_12 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Hawaii stub_1_12 n.detects" class="gt_row gt_right">2</td>
-<td headers="ORG: Hawaii stub_1_12 pct.detect" class="gt_row gt_right">6.7%</td>
-<td headers="ORG: Hawaii stub_1_12 mean" class="gt_row gt_right">0.01</td>
-<td headers="ORG: Hawaii stub_1_12 se" class="gt_row gt_right">0.00</td>
-<td headers="ORG: Hawaii stub_1_12 max" class="gt_row gt_right">0.09</td></tr>
+<td headers="Hawaiian Organic stub_1_12 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Hawaiian Organic stub_1_12 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Hawaiian Organic stub_1_12 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Hawaiian Organic stub_1_12 n.detects" class="gt_row gt_right">2</td>
+<td headers="Hawaiian Organic stub_1_12 pct.detect" class="gt_row gt_right">6.7%</td>
+<td headers="Hawaiian Organic stub_1_12 mean" class="gt_row gt_right">0.01</td>
+<td headers="Hawaiian Organic stub_1_12 se" class="gt_row gt_right">0.00</td>
+<td headers="Hawaiian Organic stub_1_12 max" class="gt_row gt_right">0.09</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="9" class="gt_group_heading" scope="colgroup" id="ORG: Grocery&#10;Imported">ORG: Grocery
-Imported</th>
+      <th colspan="9" class="gt_group_heading" scope="colgroup" id="Imported Organic">Imported Organic</th>
     </tr>
     <tr class="gt_row_group_first"><th id="stub_1_13" scope="row" class="gt_row gt_center gt_stub">Tebuthiuron</th>
-<td headers="ORG: Grocery
-Imported stub_1_13 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 n.detects" class="gt_row gt_right">30</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 pct.detect" class="gt_row gt_right">100.0%</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 mean" class="gt_row gt_right">2.63</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 se" class="gt_row gt_right">0.35</td>
-<td headers="ORG: Grocery
-Imported stub_1_13 max" class="gt_row gt_right">7.42</td></tr>
+<td headers="Imported Organic stub_1_13 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Imported Organic stub_1_13 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Imported Organic stub_1_13 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Imported Organic stub_1_13 n.detects" class="gt_row gt_right">30</td>
+<td headers="Imported Organic stub_1_13 pct.detect" class="gt_row gt_right">100.0%</td>
+<td headers="Imported Organic stub_1_13 mean" class="gt_row gt_right">2.63</td>
+<td headers="Imported Organic stub_1_13 se" class="gt_row gt_right">0.35</td>
+<td headers="Imported Organic stub_1_13 max" class="gt_row gt_right">7.42</td></tr>
     <tr><th id="stub_1_14" scope="row" class="gt_row gt_center gt_stub">Acetamiprid</th>
-<td headers="ORG: Grocery
-Imported stub_1_14 Class.Pest" class="gt_row gt_center">Insecticide</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 n.detects" class="gt_row gt_right">3</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 pct.detect" class="gt_row gt_right">10.0%</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 mean" class="gt_row gt_right">0.06</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 se" class="gt_row gt_right">0.03</td>
-<td headers="ORG: Grocery
-Imported stub_1_14 max" class="gt_row gt_right">0.73</td></tr>
+<td headers="Imported Organic stub_1_14 Class.Pest" class="gt_row gt_center">Insecticide</td>
+<td headers="Imported Organic stub_1_14 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Imported Organic stub_1_14 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Imported Organic stub_1_14 n.detects" class="gt_row gt_right">3</td>
+<td headers="Imported Organic stub_1_14 pct.detect" class="gt_row gt_right">10.0%</td>
+<td headers="Imported Organic stub_1_14 mean" class="gt_row gt_right">0.06</td>
+<td headers="Imported Organic stub_1_14 se" class="gt_row gt_right">0.03</td>
+<td headers="Imported Organic stub_1_14 max" class="gt_row gt_right">0.73</td></tr>
     <tr><th id="stub_1_15" scope="row" class="gt_row gt_center gt_stub">Azoxystrobin</th>
-<td headers="ORG: Grocery
-Imported stub_1_15 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 n.detects" class="gt_row gt_right">2</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 pct.detect" class="gt_row gt_right">6.7%</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 mean" class="gt_row gt_right">0.00</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 se" class="gt_row gt_right">0.00</td>
-<td headers="ORG: Grocery
-Imported stub_1_15 max" class="gt_row gt_right">0.06</td></tr>
+<td headers="Imported Organic stub_1_15 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Imported Organic stub_1_15 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Imported Organic stub_1_15 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Imported Organic stub_1_15 n.detects" class="gt_row gt_right">2</td>
+<td headers="Imported Organic stub_1_15 pct.detect" class="gt_row gt_right">6.7%</td>
+<td headers="Imported Organic stub_1_15 mean" class="gt_row gt_right">0.00</td>
+<td headers="Imported Organic stub_1_15 se" class="gt_row gt_right">0.00</td>
+<td headers="Imported Organic stub_1_15 max" class="gt_row gt_right">0.06</td></tr>
     <tr><th id="stub_1_16" scope="row" class="gt_row gt_center gt_stub">Piperonyl butoxide</th>
-<td headers="ORG: Grocery
-Imported stub_1_16 Class.Pest" class="gt_row gt_center">Syn.</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 n.detects" class="gt_row gt_right">1</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 pct.detect" class="gt_row gt_right">3.3%</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 mean" class="gt_row gt_right">0.03</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 se" class="gt_row gt_right">0.03</td>
-<td headers="ORG: Grocery
-Imported stub_1_16 max" class="gt_row gt_right">0.88</td></tr>
+<td headers="Imported Organic stub_1_16 Class.Pest" class="gt_row gt_center">Syn.</td>
+<td headers="Imported Organic stub_1_16 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Imported Organic stub_1_16 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Imported Organic stub_1_16 n.detects" class="gt_row gt_right">1</td>
+<td headers="Imported Organic stub_1_16 pct.detect" class="gt_row gt_right">3.3%</td>
+<td headers="Imported Organic stub_1_16 mean" class="gt_row gt_right">0.03</td>
+<td headers="Imported Organic stub_1_16 se" class="gt_row gt_right">0.03</td>
+<td headers="Imported Organic stub_1_16 max" class="gt_row gt_right">0.88</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="9" class="gt_group_heading" scope="colgroup" id="CNV: Grocery">CNV: Grocery</th>
+      <th colspan="9" class="gt_group_heading" scope="colgroup" id="Conventional">Conventional</th>
     </tr>
     <tr class="gt_row_group_first"><th id="stub_1_17" scope="row" class="gt_row gt_center gt_stub">2,4-DMPF</th>
-<td headers="CNV: Grocery stub_1_17 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="CNV: Grocery stub_1_17 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_17 n.exceedTol" class="gt_row gt_right">8</td>
-<td headers="CNV: Grocery stub_1_17 n.detects" class="gt_row gt_right">25</td>
-<td headers="CNV: Grocery stub_1_17 pct.detect" class="gt_row gt_right">83.3%</td>
-<td headers="CNV: Grocery stub_1_17 mean" class="gt_row gt_right">8.09</td>
-<td headers="CNV: Grocery stub_1_17 se" class="gt_row gt_right">1.41</td>
-<td headers="CNV: Grocery stub_1_17 max" class="gt_row gt_right">32.97</td></tr>
+<td headers="Conventional stub_1_17 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Conventional stub_1_17 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_17 n.exceedTol" class="gt_row gt_right">8</td>
+<td headers="Conventional stub_1_17 n.detects" class="gt_row gt_right">25</td>
+<td headers="Conventional stub_1_17 pct.detect" class="gt_row gt_right">83.3%</td>
+<td headers="Conventional stub_1_17 mean" class="gt_row gt_right">8.09</td>
+<td headers="Conventional stub_1_17 se" class="gt_row gt_right">1.41</td>
+<td headers="Conventional stub_1_17 max" class="gt_row gt_right">32.97</td></tr>
     <tr><th id="stub_1_18" scope="row" class="gt_row gt_center gt_stub">Piperonyl butoxide</th>
-<td headers="CNV: Grocery stub_1_18 Class.Pest" class="gt_row gt_center">Syn.</td>
-<td headers="CNV: Grocery stub_1_18 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_18 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_18 n.detects" class="gt_row gt_right">25</td>
-<td headers="CNV: Grocery stub_1_18 pct.detect" class="gt_row gt_right">83.3%</td>
-<td headers="CNV: Grocery stub_1_18 mean" class="gt_row gt_right">0.62</td>
-<td headers="CNV: Grocery stub_1_18 se" class="gt_row gt_right">0.17</td>
-<td headers="CNV: Grocery stub_1_18 max" class="gt_row gt_right">5.03</td></tr>
+<td headers="Conventional stub_1_18 Class.Pest" class="gt_row gt_center">Syn.</td>
+<td headers="Conventional stub_1_18 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_18 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_18 n.detects" class="gt_row gt_right">25</td>
+<td headers="Conventional stub_1_18 pct.detect" class="gt_row gt_right">83.3%</td>
+<td headers="Conventional stub_1_18 mean" class="gt_row gt_right">0.62</td>
+<td headers="Conventional stub_1_18 se" class="gt_row gt_right">0.17</td>
+<td headers="Conventional stub_1_18 max" class="gt_row gt_right">5.03</td></tr>
     <tr><th id="stub_1_19" scope="row" class="gt_row gt_center gt_stub">Metolachlor</th>
-<td headers="CNV: Grocery stub_1_19 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="CNV: Grocery stub_1_19 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_19 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_19 n.detects" class="gt_row gt_right">10</td>
-<td headers="CNV: Grocery stub_1_19 pct.detect" class="gt_row gt_right">33.3%</td>
-<td headers="CNV: Grocery stub_1_19 mean" class="gt_row gt_right">0.04</td>
-<td headers="CNV: Grocery stub_1_19 se" class="gt_row gt_right">0.01</td>
-<td headers="CNV: Grocery stub_1_19 max" class="gt_row gt_right">0.33</td></tr>
+<td headers="Conventional stub_1_19 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Conventional stub_1_19 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_19 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_19 n.detects" class="gt_row gt_right">10</td>
+<td headers="Conventional stub_1_19 pct.detect" class="gt_row gt_right">33.3%</td>
+<td headers="Conventional stub_1_19 mean" class="gt_row gt_right">0.04</td>
+<td headers="Conventional stub_1_19 se" class="gt_row gt_right">0.01</td>
+<td headers="Conventional stub_1_19 max" class="gt_row gt_right">0.33</td></tr>
     <tr><th id="stub_1_20" scope="row" class="gt_row gt_center gt_stub">Azoxystrobin</th>
-<td headers="CNV: Grocery stub_1_20 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="CNV: Grocery stub_1_20 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_20 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_20 n.detects" class="gt_row gt_right">6</td>
-<td headers="CNV: Grocery stub_1_20 pct.detect" class="gt_row gt_right">20.0%</td>
-<td headers="CNV: Grocery stub_1_20 mean" class="gt_row gt_right">0.03</td>
-<td headers="CNV: Grocery stub_1_20 se" class="gt_row gt_right">0.01</td>
-<td headers="CNV: Grocery stub_1_20 max" class="gt_row gt_right">0.44</td></tr>
+<td headers="Conventional stub_1_20 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Conventional stub_1_20 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_20 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_20 n.detects" class="gt_row gt_right">6</td>
+<td headers="Conventional stub_1_20 pct.detect" class="gt_row gt_right">20.0%</td>
+<td headers="Conventional stub_1_20 mean" class="gt_row gt_right">0.03</td>
+<td headers="Conventional stub_1_20 se" class="gt_row gt_right">0.01</td>
+<td headers="Conventional stub_1_20 max" class="gt_row gt_right">0.44</td></tr>
     <tr><th id="stub_1_21" scope="row" class="gt_row gt_center gt_stub">Acetamiprid</th>
-<td headers="CNV: Grocery stub_1_21 Class.Pest" class="gt_row gt_center">Insecticide</td>
-<td headers="CNV: Grocery stub_1_21 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_21 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_21 n.detects" class="gt_row gt_right">3</td>
-<td headers="CNV: Grocery stub_1_21 pct.detect" class="gt_row gt_right">10.0%</td>
-<td headers="CNV: Grocery stub_1_21 mean" class="gt_row gt_right">0.08</td>
-<td headers="CNV: Grocery stub_1_21 se" class="gt_row gt_right">0.05</td>
-<td headers="CNV: Grocery stub_1_21 max" class="gt_row gt_right">1.24</td></tr>
+<td headers="Conventional stub_1_21 Class.Pest" class="gt_row gt_center">Insecticide</td>
+<td headers="Conventional stub_1_21 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_21 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_21 n.detects" class="gt_row gt_right">3</td>
+<td headers="Conventional stub_1_21 pct.detect" class="gt_row gt_right">10.0%</td>
+<td headers="Conventional stub_1_21 mean" class="gt_row gt_right">0.08</td>
+<td headers="Conventional stub_1_21 se" class="gt_row gt_right">0.05</td>
+<td headers="Conventional stub_1_21 max" class="gt_row gt_right">1.24</td></tr>
     <tr><th id="stub_1_22" scope="row" class="gt_row gt_center gt_stub">Tebuthiuron</th>
-<td headers="CNV: Grocery stub_1_22 Class.Pest" class="gt_row gt_center">Herbicide</td>
-<td headers="CNV: Grocery stub_1_22 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_22 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_22 n.detects" class="gt_row gt_right">3</td>
-<td headers="CNV: Grocery stub_1_22 pct.detect" class="gt_row gt_right">10.0%</td>
-<td headers="CNV: Grocery stub_1_22 mean" class="gt_row gt_right">0.01</td>
-<td headers="CNV: Grocery stub_1_22 se" class="gt_row gt_right">0.01</td>
-<td headers="CNV: Grocery stub_1_22 max" class="gt_row gt_right">0.11</td></tr>
+<td headers="Conventional stub_1_22 Class.Pest" class="gt_row gt_center">Herbicide</td>
+<td headers="Conventional stub_1_22 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_22 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_22 n.detects" class="gt_row gt_right">3</td>
+<td headers="Conventional stub_1_22 pct.detect" class="gt_row gt_right">10.0%</td>
+<td headers="Conventional stub_1_22 mean" class="gt_row gt_right">0.01</td>
+<td headers="Conventional stub_1_22 se" class="gt_row gt_right">0.01</td>
+<td headers="Conventional stub_1_22 max" class="gt_row gt_right">0.11</td></tr>
     <tr><th id="stub_1_23" scope="row" class="gt_row gt_center gt_stub">Thiamethoxam</th>
-<td headers="CNV: Grocery stub_1_23 Class.Pest" class="gt_row gt_center">Insecticide</td>
-<td headers="CNV: Grocery stub_1_23 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_23 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_23 n.detects" class="gt_row gt_right">3</td>
-<td headers="CNV: Grocery stub_1_23 pct.detect" class="gt_row gt_right">10.0%</td>
-<td headers="CNV: Grocery stub_1_23 mean" class="gt_row gt_right">0.10</td>
-<td headers="CNV: Grocery stub_1_23 se" class="gt_row gt_right">0.05</td>
-<td headers="CNV: Grocery stub_1_23 max" class="gt_row gt_right">0.95</td></tr>
+<td headers="Conventional stub_1_23 Class.Pest" class="gt_row gt_center">Insecticide</td>
+<td headers="Conventional stub_1_23 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_23 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_23 n.detects" class="gt_row gt_right">3</td>
+<td headers="Conventional stub_1_23 pct.detect" class="gt_row gt_right">10.0%</td>
+<td headers="Conventional stub_1_23 mean" class="gt_row gt_right">0.10</td>
+<td headers="Conventional stub_1_23 se" class="gt_row gt_right">0.05</td>
+<td headers="Conventional stub_1_23 max" class="gt_row gt_right">0.95</td></tr>
     <tr><th id="stub_1_24" scope="row" class="gt_row gt_center gt_stub">2,4-DMA</th>
-<td headers="CNV: Grocery stub_1_24 Class.Pest" class="gt_row gt_center">Miticide</td>
-<td headers="CNV: Grocery stub_1_24 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_24 n.exceedTol" class="gt_row gt_right">1</td>
-<td headers="CNV: Grocery stub_1_24 n.detects" class="gt_row gt_right">1</td>
-<td headers="CNV: Grocery stub_1_24 pct.detect" class="gt_row gt_right">3.3%</td>
-<td headers="CNV: Grocery stub_1_24 mean" class="gt_row gt_right">0.39</td>
-<td headers="CNV: Grocery stub_1_24 se" class="gt_row gt_right">0.39</td>
-<td headers="CNV: Grocery stub_1_24 max" class="gt_row gt_right">11.62</td></tr>
+<td headers="Conventional stub_1_24 Class.Pest" class="gt_row gt_center">Miticide</td>
+<td headers="Conventional stub_1_24 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_24 n.exceedTol" class="gt_row gt_right">1</td>
+<td headers="Conventional stub_1_24 n.detects" class="gt_row gt_right">1</td>
+<td headers="Conventional stub_1_24 pct.detect" class="gt_row gt_right">3.3%</td>
+<td headers="Conventional stub_1_24 mean" class="gt_row gt_right">0.39</td>
+<td headers="Conventional stub_1_24 se" class="gt_row gt_right">0.39</td>
+<td headers="Conventional stub_1_24 max" class="gt_row gt_right">11.62</td></tr>
     <tr><th id="stub_1_25" scope="row" class="gt_row gt_center gt_stub">Fluopyram</th>
-<td headers="CNV: Grocery stub_1_25 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="CNV: Grocery stub_1_25 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_25 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_25 n.detects" class="gt_row gt_right">1</td>
-<td headers="CNV: Grocery stub_1_25 pct.detect" class="gt_row gt_right">3.3%</td>
-<td headers="CNV: Grocery stub_1_25 mean" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_25 se" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_25 max" class="gt_row gt_right">0.10</td></tr>
+<td headers="Conventional stub_1_25 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Conventional stub_1_25 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_25 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_25 n.detects" class="gt_row gt_right">1</td>
+<td headers="Conventional stub_1_25 pct.detect" class="gt_row gt_right">3.3%</td>
+<td headers="Conventional stub_1_25 mean" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_25 se" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_25 max" class="gt_row gt_right">0.10</td></tr>
     <tr><th id="stub_1_26" scope="row" class="gt_row gt_center gt_stub">Metalaxyl</th>
-<td headers="CNV: Grocery stub_1_26 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="CNV: Grocery stub_1_26 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_26 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_26 n.detects" class="gt_row gt_right">1</td>
-<td headers="CNV: Grocery stub_1_26 pct.detect" class="gt_row gt_right">3.3%</td>
-<td headers="CNV: Grocery stub_1_26 mean" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_26 se" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_26 max" class="gt_row gt_right">0.09</td></tr>
+<td headers="Conventional stub_1_26 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Conventional stub_1_26 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_26 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_26 n.detects" class="gt_row gt_right">1</td>
+<td headers="Conventional stub_1_26 pct.detect" class="gt_row gt_right">3.3%</td>
+<td headers="Conventional stub_1_26 mean" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_26 se" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_26 max" class="gt_row gt_right">0.09</td></tr>
     <tr><th id="stub_1_27" scope="row" class="gt_row gt_center gt_stub">Picoxystrobin</th>
-<td headers="CNV: Grocery stub_1_27 Class.Pest" class="gt_row gt_center">Fungicide</td>
-<td headers="CNV: Grocery stub_1_27 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
-<td headers="CNV: Grocery stub_1_27 n.exceedTol" class="gt_row gt_right">0</td>
-<td headers="CNV: Grocery stub_1_27 n.detects" class="gt_row gt_right">1</td>
-<td headers="CNV: Grocery stub_1_27 pct.detect" class="gt_row gt_right">3.3%</td>
-<td headers="CNV: Grocery stub_1_27 mean" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_27 se" class="gt_row gt_right">0.00</td>
-<td headers="CNV: Grocery stub_1_27 max" class="gt_row gt_right">0.09</td></tr>
+<td headers="Conventional stub_1_27 Class.Pest" class="gt_row gt_center">Fungicide</td>
+<td headers="Conventional stub_1_27 MRL.OG.ppb" class="gt_row gt_right">10.0</td>
+<td headers="Conventional stub_1_27 n.exceedTol" class="gt_row gt_right">0</td>
+<td headers="Conventional stub_1_27 n.detects" class="gt_row gt_right">1</td>
+<td headers="Conventional stub_1_27 pct.detect" class="gt_row gt_right">3.3%</td>
+<td headers="Conventional stub_1_27 mean" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_27 se" class="gt_row gt_right">0.00</td>
+<td headers="Conventional stub_1_27 max" class="gt_row gt_right">0.09</td></tr>
   </tbody>
   &#10;  
 </table>
@@ -3618,10 +3524,10 @@ ggsave(
 ``` r
 fct.PERMANOVA <- fct.ISA.grp %>%
   fct_recode(
-    "MNG ORG: New York & Pennsylvania" = "OREI",
-    "ORG: Hawaii" = "OG-HI",
-    "ORG: Grocery Imported" = "OG-IMP",
-    "CNV: Grocery" = "CNV"
+    "Organically Managed" = "OREI",
+    "Hawaiian Organic" = "OG-HI",
+    "Imported Organic" = "OG-IMP",
+    "Conventional" = "CNV"
   )
 
 adonis2(df.fig4.NMDS ~ fct.PERMANOVA, method = "bray")
@@ -4062,32 +3968,32 @@ pairwise.adonis(df.fig4.NMDS, factors = fct.PERMANOVA) %>%
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td headers="pairs" class="gt_row gt_left">ORG: Hawaii vs ORG: Grocery Imported</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Hawaiian Organic vs Imported Organic</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">6.405</td>
 <td headers="F.Model" class="gt_row gt_right">32.508</td>
 <td headers="R2" class="gt_row gt_right">0.414</td>
 <td headers="p.adjusted" class="gt_row gt_right">0.006</td></tr>
-    <tr><td headers="pairs" class="gt_row gt_left">ORG: Hawaii vs CNV: Grocery</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Hawaiian Organic vs Conventional</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">3.530</td>
 <td headers="F.Model" class="gt_row gt_right">13.437</td>
 <td headers="R2" class="gt_row gt_right">0.230</td>
 <td headers="p.adjusted" class="gt_row gt_right">0.006</td></tr>
-    <tr><td headers="pairs" class="gt_row gt_left">ORG: Hawaii vs MNG ORG: New York &amp; Pennsylvania</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Hawaiian Organic vs Organically Managed</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">3.592</td>
 <td headers="F.Model" class="gt_row gt_right">10.221</td>
 <td headers="R2" class="gt_row gt_right">0.148</td>
 <td headers="p.adjusted" class="gt_row gt_right">0.006</td></tr>
-    <tr><td headers="pairs" class="gt_row gt_left">ORG: Grocery Imported vs CNV: Grocery</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Imported Organic vs Conventional</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">9.789</td>
 <td headers="F.Model" class="gt_row gt_right">59.416</td>
 <td headers="R2" class="gt_row gt_right">0.510</td>
 <td headers="p.adjusted" class="gt_row gt_right">0.006</td></tr>
-    <tr><td headers="pairs" class="gt_row gt_left">ORG: Grocery Imported vs MNG ORG: New York &amp; Pennsylvania</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Imported Organic vs Organically Managed</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">8.550</td>
 <td headers="F.Model" class="gt_row gt_right">33.170</td>
 <td headers="R2" class="gt_row gt_right">0.318</td>
 <td headers="p.adjusted" class="gt_row gt_right">0.006</td></tr>
-    <tr><td headers="pairs" class="gt_row gt_left">CNV: Grocery vs MNG ORG: New York &amp; Pennsylvania</td>
+    <tr><td headers="pairs" class="gt_row gt_left">Conventional vs Organically Managed</td>
 <td headers="SumsOfSqs" class="gt_row gt_right">5.941</td>
 <td headers="F.Model" class="gt_row gt_right">19.746</td>
 <td headers="R2" class="gt_row gt_right">0.220</td>
@@ -4097,7 +4003,7 @@ pairwise.adonis(df.fig4.NMDS, factors = fct.PERMANOVA) %>%
 </table>
 </div>
 
-#### Table S5. Result of indicator species analysis (ISA) describing the degree of association between groups of wax samples.
+#### Table S5. Result of indicator species analysis (ISA) describing the degree of association between groups of honey samples.
 
 ``` r
 # Returns list of indicator species in each group in a readable format
@@ -4106,11 +4012,11 @@ stat.ISA.tab %>%
   mutate(
     Groups = case_match(
       Groups,
-      "OREI" ~ "MNG ORG: New York & Pennsylvania",
-      "OG-HI" ~ "ORG: Hawaii",
-      "OG-IMP" ~ "ORG: Grocery Imported",
-      "CNV" ~ "CNV: Grocery",
-      "OREI+CNV" ~ "MNG ORG & CNV",
+      "OREI" ~ "Organically Managed",
+      "OG-HI" ~ "Hawaiian Organic",
+      "OG-IMP" ~ "Imported Organic",
+      "CNV" ~ "Conventional",
+      "OREI+CNV" ~ "Organically Managed & Conventional",
     )
   ) %>%
   gt() %>%
@@ -4527,60 +4433,60 @@ stat.ISA.tab %>%
   </thead>
   <tbody class="gt_table_body">
     <tr class="gt_group_heading_row">
-      <th colspan="5" class="gt_group_heading" scope="colgroup" id="ORG: Grocery Imported">ORG: Grocery Imported</th>
+      <th colspan="5" class="gt_group_heading" scope="colgroup" id="Imported Organic">Imported Organic</th>
     </tr>
-    <tr class="gt_row_group_first"><td headers="ORG: Grocery Imported  Cmpd" class="gt_row gt_left">Tebuthiuron</td>
-<td headers="ORG: Grocery Imported  A" class="gt_row gt_right">0.982</td>
-<td headers="ORG: Grocery Imported  B" class="gt_row gt_right">1.000</td>
-<td headers="ORG: Grocery Imported  stat" class="gt_row gt_right">0.991</td>
-<td headers="ORG: Grocery Imported  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr class="gt_row_group_first"><td headers="Imported Organic  Cmpd" class="gt_row gt_left">Tebuthiuron</td>
+<td headers="Imported Organic  A" class="gt_row gt_right">0.982</td>
+<td headers="Imported Organic  B" class="gt_row gt_right">1.000</td>
+<td headers="Imported Organic  stat" class="gt_row gt_right">0.991</td>
+<td headers="Imported Organic  p.value" class="gt_row gt_right">0.005</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="5" class="gt_group_heading" scope="colgroup" id="CNV: Grocery">CNV: Grocery</th>
+      <th colspan="5" class="gt_group_heading" scope="colgroup" id="Conventional">Conventional</th>
     </tr>
-    <tr class="gt_row_group_first"><td headers="CNV: Grocery  Cmpd" class="gt_row gt_left">2,4-DMPF</td>
-<td headers="CNV: Grocery  A" class="gt_row gt_right">0.878</td>
-<td headers="CNV: Grocery  B" class="gt_row gt_right">0.862</td>
-<td headers="CNV: Grocery  stat" class="gt_row gt_right">0.870</td>
-<td headers="CNV: Grocery  p.value" class="gt_row gt_right">0.005</td></tr>
-    <tr><td headers="CNV: Grocery  Cmpd" class="gt_row gt_left">Metolachlor</td>
-<td headers="CNV: Grocery  A" class="gt_row gt_right">0.791</td>
-<td headers="CNV: Grocery  B" class="gt_row gt_right">0.345</td>
-<td headers="CNV: Grocery  stat" class="gt_row gt_right">0.522</td>
-<td headers="CNV: Grocery  p.value" class="gt_row gt_right">0.005</td></tr>
-    <tr><td headers="CNV: Grocery  Cmpd" class="gt_row gt_left">Thiamethoxam</td>
-<td headers="CNV: Grocery  A" class="gt_row gt_right">1.000</td>
-<td headers="CNV: Grocery  B" class="gt_row gt_right">0.103</td>
-<td headers="CNV: Grocery  stat" class="gt_row gt_right">0.322</td>
-<td headers="CNV: Grocery  p.value" class="gt_row gt_right">0.015</td></tr>
+    <tr class="gt_row_group_first"><td headers="Conventional  Cmpd" class="gt_row gt_left">2,4-DMPF</td>
+<td headers="Conventional  A" class="gt_row gt_right">0.878</td>
+<td headers="Conventional  B" class="gt_row gt_right">0.862</td>
+<td headers="Conventional  stat" class="gt_row gt_right">0.870</td>
+<td headers="Conventional  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr><td headers="Conventional  Cmpd" class="gt_row gt_left">Metolachlor</td>
+<td headers="Conventional  A" class="gt_row gt_right">0.791</td>
+<td headers="Conventional  B" class="gt_row gt_right">0.345</td>
+<td headers="Conventional  stat" class="gt_row gt_right">0.522</td>
+<td headers="Conventional  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr><td headers="Conventional  Cmpd" class="gt_row gt_left">Thiamethoxam</td>
+<td headers="Conventional  A" class="gt_row gt_right">1.000</td>
+<td headers="Conventional  B" class="gt_row gt_right">0.103</td>
+<td headers="Conventional  stat" class="gt_row gt_right">0.322</td>
+<td headers="Conventional  p.value" class="gt_row gt_right">0.015</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="5" class="gt_group_heading" scope="colgroup" id="MNG ORG &amp;amp; CNV">MNG ORG &amp; CNV</th>
+      <th colspan="5" class="gt_group_heading" scope="colgroup" id="Organically Managed &amp;amp; Conventional">Organically Managed &amp; Conventional</th>
     </tr>
-    <tr class="gt_row_group_first"><td headers="MNG ORG & CNV  Cmpd" class="gt_row gt_left">Piperonyl butoxide</td>
-<td headers="MNG ORG & CNV  A" class="gt_row gt_right">0.979</td>
-<td headers="MNG ORG & CNV  B" class="gt_row gt_right">0.764</td>
-<td headers="MNG ORG & CNV  stat" class="gt_row gt_right">0.865</td>
-<td headers="MNG ORG & CNV  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr class="gt_row_group_first"><td headers="Organically Managed & Conventional  Cmpd" class="gt_row gt_left">Piperonyl butoxide</td>
+<td headers="Organically Managed & Conventional  A" class="gt_row gt_right">0.979</td>
+<td headers="Organically Managed & Conventional  B" class="gt_row gt_right">0.764</td>
+<td headers="Organically Managed & Conventional  stat" class="gt_row gt_right">0.865</td>
+<td headers="Organically Managed & Conventional  p.value" class="gt_row gt_right">0.005</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="5" class="gt_group_heading" scope="colgroup" id="ORG: Hawaii">ORG: Hawaii</th>
+      <th colspan="5" class="gt_group_heading" scope="colgroup" id="Hawaiian Organic">Hawaiian Organic</th>
     </tr>
-    <tr class="gt_row_group_first"><td headers="ORG: Hawaii  Cmpd" class="gt_row gt_left">2,4-DMA</td>
-<td headers="ORG: Hawaii  A" class="gt_row gt_right">0.949</td>
-<td headers="ORG: Hawaii  B" class="gt_row gt_right">0.556</td>
-<td headers="ORG: Hawaii  stat" class="gt_row gt_right">0.726</td>
-<td headers="ORG: Hawaii  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr class="gt_row_group_first"><td headers="Hawaiian Organic  Cmpd" class="gt_row gt_left">2,4-DMA</td>
+<td headers="Hawaiian Organic  A" class="gt_row gt_right">0.949</td>
+<td headers="Hawaiian Organic  B" class="gt_row gt_right">0.556</td>
+<td headers="Hawaiian Organic  stat" class="gt_row gt_right">0.726</td>
+<td headers="Hawaiian Organic  p.value" class="gt_row gt_right">0.005</td></tr>
     <tr class="gt_group_heading_row">
-      <th colspan="5" class="gt_group_heading" scope="colgroup" id="MNG ORG: New York &amp;amp; Pennsylvania">MNG ORG: New York &amp; Pennsylvania</th>
+      <th colspan="5" class="gt_group_heading" scope="colgroup" id="Organically Managed">Organically Managed</th>
     </tr>
-    <tr class="gt_row_group_first"><td headers="MNG ORG: New York & Pennsylvania  Cmpd" class="gt_row gt_left">Coumaphos oxon</td>
-<td headers="MNG ORG: New York & Pennsylvania  A" class="gt_row gt_right">1.000</td>
-<td headers="MNG ORG: New York & Pennsylvania  B" class="gt_row gt_right">0.233</td>
-<td headers="MNG ORG: New York & Pennsylvania  stat" class="gt_row gt_right">0.482</td>
-<td headers="MNG ORG: New York & Pennsylvania  p.value" class="gt_row gt_right">0.005</td></tr>
-    <tr><td headers="MNG ORG: New York & Pennsylvania  Cmpd" class="gt_row gt_left">(E)-Fenpyroximate</td>
-<td headers="MNG ORG: New York & Pennsylvania  A" class="gt_row gt_right">1.000</td>
-<td headers="MNG ORG: New York & Pennsylvania  B" class="gt_row gt_right">0.140</td>
-<td headers="MNG ORG: New York & Pennsylvania  stat" class="gt_row gt_right">0.374</td>
-<td headers="MNG ORG: New York & Pennsylvania  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr class="gt_row_group_first"><td headers="Organically Managed  Cmpd" class="gt_row gt_left">Coumaphos oxon</td>
+<td headers="Organically Managed  A" class="gt_row gt_right">1.000</td>
+<td headers="Organically Managed  B" class="gt_row gt_right">0.233</td>
+<td headers="Organically Managed  stat" class="gt_row gt_right">0.482</td>
+<td headers="Organically Managed  p.value" class="gt_row gt_right">0.005</td></tr>
+    <tr><td headers="Organically Managed  Cmpd" class="gt_row gt_left">(E)-Fenpyroximate</td>
+<td headers="Organically Managed  A" class="gt_row gt_right">1.000</td>
+<td headers="Organically Managed  B" class="gt_row gt_right">0.140</td>
+<td headers="Organically Managed  stat" class="gt_row gt_right">0.374</td>
+<td headers="Organically Managed  p.value" class="gt_row gt_right">0.005</td></tr>
   </tbody>
   &#10;  
 </table>
@@ -4617,7 +4523,10 @@ fig.5A <- ggplot(df.fig5A.MRLHeat) +
     Class.Pest ~ Group,
     scales = "free",
     space = "free",
-    labeller = labeller(Group = styles.group)
+    labeller = labeller(
+      # Wrap the Group facet labels at 13 characters
+      Group = setNames(str_wrap(styles.group, width = 13), names(styles.group))
+    )
   ) +
   scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
   styles.heat +
@@ -4666,7 +4575,7 @@ ggsave(
 (fig.5B.abs <- remove_geom(fig.5B, "point") +
   scale_x_discrete(
     labels = c(
-      "OREI" = "N.E. USA",
+      "OREI" = "Managed Org.",
       "OG-HI" = "Hawaii",
       "OG-IMP" = "Organic",
       "CNV" = "Conventional"
