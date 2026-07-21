@@ -2,7 +2,7 @@
 title: "Pesticide contamination in honey from organically managed colonies in the continental USA is comparable to certified organic imports"
 subtitle: "Data and analysis"
 author: 
- - Benedict X. DeMoras^[Cornell University, bd379@cornell.edu]
+ - Benedict X. DeMoras^[Cornell University, benedict.demoras@gmail.com]
  - Angélica B. Sanchez^[Cornell University]
  - Emily O’Neil^[Cornell University]
  - Robyn M. Underwood^[The Pennsylvania State University]
@@ -17,7 +17,7 @@ output:
     variant: gfm
 ---
 
-```{r setup, message=F}
+```{r setup, message=F, warning=F}
 library(tidyverse)      # Easier data manipulation
 library(readxl)         # Import Excel files directly
 library(sf)             # Spatial data
@@ -655,7 +655,7 @@ ggsave(
 )
 ```
 
-### 3.1. How did pesticide contamination compare between sampled honeys?
+### 3.1. Pesticide contamination across sampled honeys
 
 #### Stats for figure 3: Comparing contamination across groups of honey
 
@@ -1022,32 +1022,81 @@ stat.ISA.tab %>%
   tab_options(table.align = "left")
 ```
 
-### 3.2. Did the content of the sampled honey exceed USDA tolerances for organic production?
+### 3.2. Pesticide contamination relative to USDA organic tolerances
 
-#### Figure 5. Samples exceeding surveillance MRLs for organic honey.
+#### Stats for figure 5: Difference in likelihood of samples exceeding MRLs
 
-```{r fig5}
+```{r stats--fig5A}
 # Prepare data ----------------------------------------------------------------
-df.fig5A.MRLHeat <- df.fig2.heat %>%
+df.fig5A.MRL <- df.fig2.heat %>%
+  group_by(Sample.ID, Group) %>%
+  summarize(
+    # The binomial model expects Yes and No data as 1 or 0
+    SampleExceed.model = ifelse(any(Exceed.Tol == "Yes"), 1, 0),
+    # But for plotting, we want Yes and No labels
+    SampleExceed.plot = ifelse(any(Exceed.Tol == "Yes"), "Yes", "No"),
+    .groups = "drop"
+  )
+
+df.fig5B.MRLHeat <- df.fig2.heat %>%
   group_by(Cmpd) %>%
   filter(any(Exceed.Tol == "Yes")) %>%
   mutate(Cmpd = case_match(Cmpd, "Piperonyl butoxide" ~ "PBO", .default = Cmpd))
 
-df.fig5B.MRL <- df.fig2.heat %>%
-  group_by(Sample.ID, Group) %>%
-  summarize(
-    Sample.Exceed = ifelse(any(Exceed.Tol == "Yes"), "Yes", "No"),
-    .groups = "drop"
-  )
-
-df.fig5B.signif <- tibble(
-  Group = c("OG-HI", "OG-IMP", "CNV", "OREI"),
-  Contrast.MRL = c("b", "ab", "b", "a"),
-  y.MRL = rep(0.9, 4)
+# Build models --------------------------------------------------------------
+df.modFig5A.prior <- data.frame(
+  prior = "normal(0, 2.5)",
+  class = "fixef"
 )
 
+m.fig5A <- glmmTMB(
+  SampleExceed.model ~ Group,
+  data   = df.fig5A.MRL,
+  family = "binomial",
+  priors = df.modFig5A.prior
+  )
+
+m.fig5ANULL <- glmmTMB(
+  SampleExceed.model ~ 1,
+  data   = df.fig5A.MRL,
+  family = "binomial",
+  priors = df.modFig5A.prior
+  )
+
+anova(m.fig5A, m.fig5ANULL)
+
+emmeans(m.fig5A, pairwise ~ Group, type = "response")
+```
+
+#### Figure 5. Samples exceeding surveillance MRLs for organic honey.
+
+```{r fig5, fig.height=5, fig.width=7}
+# Fig 5A: Plot w/ proportion of samples above MRL ---------------------------------
+fig.5A <- ggplot(
+  data = df.fig5A.MRL,
+  aes(x = Group, fill = SampleExceed.plot)
+) +
+  geom_bar(position = "fill") +
+  geom_jitter(
+    aes(y = ifelse(SampleExceed.plot == "Yes", 1, 0)),
+    position = position_jitter(height = 0.01, width = 0.3),
+    shape = 1,
+    alpha = 0.6,
+    color = "black"
+  ) +
+  # Wrap the Group labels at 13 characters
+  scale_x_discrete(labels = str_wrap(styles.group, width = 13)) +
+  scale_fill_manual(
+    name = "Exceeds organic\nMRLs?",
+    values = colors.tols,
+    breaks = c("Yes", "No")
+  ) +
+  ylab("\nProp. of samples >MRL\n") +
+  theme_classic() +
+  theme(legend.position = "left")
+
 # Fig 5A: Heatmap showing samples above tolerance --------------------------------
-fig.5A <- ggplot(df.fig5A.MRLHeat) +
+fig.5B <- ggplot(df.fig5B.MRLHeat) +
   geom_tile(aes(x = Sample.ID, y = Cmpd, fill = Exceed.Tol), alpha = 1) +
   facet_grid(
     Class.Pest ~ Group,
@@ -1062,22 +1111,6 @@ fig.5A <- ggplot(df.fig5A.MRLHeat) +
   styles.heat +
   theme(legend.position = "left", plot.caption.position = "panel") +
   labs(caption = "Plus 93 more compounds not exceeding MRLs.")
-
-# Fig 5B: Plot w/ proportion of samples above MRL ---------------------------------
-fig.5B <- ggplot(data = df.fig5B.MRL, aes(x = Group, fill = Sample.Exceed)) +
-  geom_bar(position = "fill") +
-  geom_jitter(
-    aes(y = ifelse(Sample.Exceed == "Yes", 1, 0)),
-    position = position_jitter(height = 0.01, width = 0.3),
-    shape = 1,
-    alpha = 0.6,
-    color = "black"
-  ) +
-  scale_x_discrete(labels = styles.group) +
-  scale_fill_manual(name = "Exceeds organic\nMRLs?", values = colors.tols) +
-  ylab("\nProp. of samples >MRL\n") +
-  theme_classic() +
-  theme(legend.position = "none")
 
 # Assemble combined figure
 ((fig.5A) /
@@ -1098,10 +1131,10 @@ ggsave(
 #### Figure 5B for visual abstract 
 
 ```{r fig--5b-abstract, fig.height=1.5, fig.width=3.75, message=FALSE}
-(fig.5B.abs <- df.fig5B.MRL %>%
-  mutate(Sample.Exceed = case_match(Sample.Exceed, "Yes" ~ 1, "No" ~ 0)) %>%
+(fig.5A.abs <- df.fig5A.MRL %>%
+  mutate(SampleExceed.plot = case_match(SampleExceed.plot, "Yes" ~ 1, "No" ~ 0)) %>%
   group_by(Group) %>%
-  summarize(ProbOverMRL = mean(Sample.Exceed)) %>%
+  summarize(ProbOverMRL = mean(SampleExceed.plot)) %>%
 
   ggplot(aes(x = Group, y = ProbOverMRL, color = Group, fill = Group)) +
   geom_bar(stat = "identity", linewidth = 1) +
@@ -1122,7 +1155,7 @@ ggsave(
 
 ggsave(
   "Abstract_Fig5B.tiff",
-  plot = fig.5B.abs,
+  plot = fig.5A.abs,
   path = "figures",
   dpi = 500,
   width = 3.75,
